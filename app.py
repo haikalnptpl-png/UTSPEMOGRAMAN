@@ -38,6 +38,11 @@ LOGO_IMG_HTML = (
     if LOGO_URI
     else "🧺"
 )
+LOGO_HERO_HTML = (
+    f'<img class="hero-logo" src="{LOGO_URI}" alt="Logo Ultra Laundry" />'
+    if LOGO_URI
+    else '<div class="hero-emoji">🏠</div>'
+)
 
 st.set_page_config(
     page_title="Ultra Laundry",
@@ -228,6 +233,47 @@ html, body, [class*="css"] { font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-
 /* ---------- Info / pesan ---------- */
 [data-testid="stAlert"] { border-radius: 14px; border: 1px solid transparent; }
 [data-testid="stAlertContainer"] { border-radius: 14px; }
+
+/* ---------- Logo di hero ---------- */
+.hero-logo {
+    width: 54px; height: 54px; flex: 0 0 54px;
+    border-radius: 14px; object-fit: contain;
+    background: #fff; padding: 4px;
+    border: 1px solid rgba(255,255,255,.30);
+    box-shadow: 0 6px 16px rgba(0,0,0,.16);
+}
+
+/* ---------- Kartu ber-border (st.container border=True) ---------- */
+[data-testid="stVerticalBlockBorderWrapper"] {
+    border-radius: 16px;
+    border-color: var(--ul-line);
+    box-shadow: 0 4px 16px rgba(15,23,42,.05);
+}
+
+/* ---------- Responsif: tablet & HP ---------- */
+@media (max-width: 900px) {
+    .block-container { padding-top: 1.5rem; padding-left: 1.1rem; padding-right: 1.1rem; }
+    .hero { padding: 1.1rem 1.25rem; gap: .8rem; }
+    .hero-title { font-size: 1.3rem; }
+}
+@media (max-width: 640px) {
+    .block-container { padding-top: 1.1rem; padding-left: .8rem; padding-right: .8rem; padding-bottom: 2rem; }
+    .hero { flex-direction: column; align-items: flex-start; gap: .55rem;
+            padding: 1rem 1.1rem; border-radius: 16px; margin-bottom: 1rem; }
+    .hero-emoji { font-size: 1.9rem; padding: .45rem .6rem; }
+    .hero-logo { width: 46px; height: 46px; flex-basis: 46px; }
+    .hero-title { font-size: 1.18rem; }
+    .hero-desc  { font-size: .82rem; }
+    [data-testid="stMetric"] { padding: .85rem .95rem; border-radius: 14px; }
+    [data-testid="stMetricValue"] { font-size: 1.35rem !important; }
+    [data-testid="stMetricLabel"] p { font-size: .72rem; }
+    .section-title { font-size: .95rem; }
+    .nota { padding: 1rem 1.05rem; border-radius: 14px; }
+    .nota-kode { font-size: 1.05rem; }
+    .nota-total { font-size: 1.15rem; }
+    .stTabs [data-baseweb="tab"] { padding: .45rem .65rem; font-size: .82rem; }
+    [data-testid="stColumn"] { margin-bottom: .35rem; }
+}
 </style>
 """
 
@@ -345,9 +391,9 @@ def bangun_sidebar() -> str:
 def halaman_beranda() -> None:
     tampilkan_flash()
     st.markdown(
-        """
+        f"""
         <div class="hero">
-          <div class="hero-emoji">🏠</div>
+          {LOGO_HERO_HTML}
           <div>
             <div class="hero-title">Dashboard Ultra Laundry</div>
             <div class="hero-desc">Ringkasan omzet, transaksi, dan aktivitas laundry hari ini.</div>
