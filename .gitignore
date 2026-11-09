@@ -1,0 +1,25 @@
+# Python virtual environments
+.venv/
+.laundryvenv/
+venv/
+env/
+
+# Python cache / build artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Local AI tooling memory
+.workbuddy-ai/
+
+# Streamlit secrets (keep config.toml, never commit secrets)
+.streamlit/secrets.toml
+
+# Old pre-migration database backup (demo laundry.db is kept)
+laundry_backup_lama.db
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db

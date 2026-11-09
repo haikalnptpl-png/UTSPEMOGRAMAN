@@ -1,0 +1,1552 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ultra Laundry — Sistem Administrasi Transaksi</title>
+<style>
+/* ============================ DESIGN SYSTEM ============================ */
+:root{
+  --primary:#2563EB; --primary-d:#1D4ED8; --accent:#06B6D4;
+  --ink:#0F172A; --muted:#64748B; --line:#E2E8F0; --bg:#F8FAFC;
+  --ok:#16A34A; --err:#DC2626; --warn:#D97706;
+  --radius:14px; --shadow:0 6px 20px rgba(15,23,42,.07);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Plus Jakarta Sans','Segoe UI',system-ui,-apple-system,sans-serif;
+  background:radial-gradient(1100px 520px at 12% -12%,rgba(37,99,235,.10),transparent 60%),
+             radial-gradient(900px 480px at 92% -6%,rgba(6,182,212,.12),transparent 62%),var(--bg);
+  color:var(--ink); min-height:100vh; -webkit-font-smoothing:antialiased;
+}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:8px;border:2px solid var(--bg)}
+::-webkit-scrollbar-thumb:hover{background:#94A3B8}
+
+/* ============================ LAYOUT ============================ */
+.app{display:flex;min-height:100vh}
+.sidebar{
+  width:264px;flex:0 0 264px;
+  background:linear-gradient(180deg,#0B1B36 0%,#10254A 55%,#0E2A4D 100%);
+  color:#E2E8F0;display:flex;flex-direction:column;
+  position:sticky;top:0;height:100vh;overflow-y:auto;
+}
+.brand{display:flex;align-items:center;gap:.75rem;padding:1.5rem 1.25rem 1.1rem}
+.brand-logo{
+  width:46px;height:46px;flex:0 0 46px;display:flex;align-items:center;justify-content:center;
+  font-size:1.45rem;border-radius:14px;background:linear-gradient(135deg,var(--primary),var(--accent));
+  box-shadow:0 8px 20px rgba(37,99,235,.45);
+}
+.brand-text{line-height:1.15}
+.brand-name{font-weight:800;font-size:1.02rem;color:#fff;letter-spacing:.2px}
+.brand-sub{font-size:.66rem;color:#93C5FD;letter-spacing:.13em;text-transform:uppercase}
+.nav-label{font-size:.66rem;letter-spacing:.16em;color:#64748B;font-weight:700;padding:1rem 1.25rem .5rem}
+.nav-item{
+  display:flex;align-items:center;gap:.65rem;width:calc(100% - 1.5rem);margin:0 .75rem .3rem;
+  padding:.65rem .85rem;border-radius:12px;border:0;background:transparent;color:#CBD5E1;
+  font-family:inherit;font-size:.92rem;font-weight:600;cursor:pointer;text-align:left;
+  transition:background .16s ease,transform .16s ease,box-shadow .16s ease;
+}
+.nav-item:hover{background:rgba(255,255,255,.08);transform:translateX(3px)}
+.nav-item.active{
+  background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;
+  box-shadow:0 6px 16px rgba(37,99,235,.42);
+}
+.sidebar-foot{margin-top:auto;padding:1.25rem;font-size:.76rem;color:#94A3B8;line-height:1.65}
+.sidebar-foot code{background:rgba(255,255,255,.1);padding:.1rem .35rem;border-radius:5px;color:#CBD5E1;font-size:.72rem}
+.link-btn{
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#CBD5E1;
+  border-radius:9px;padding:.4rem .7rem;font-family:inherit;font-size:.74rem;font-weight:600;
+  cursor:pointer;width:100%;margin-top:.5rem;transition:background .16s ease;
+}
+.link-btn:hover{background:rgba(255,255,255,.16)}
+
+.main{flex:1;min-width:0;padding:2.1rem 2.4rem 3rem;max-width:1500px;margin:0 auto}
+
+/* ============================ HERO ============================ */
+.hero{
+  display:flex;align-items:center;gap:1rem;background:linear-gradient(120deg,#1D4ED8 0%,#2563EB 45%,#06B6D4 100%);
+  border-radius:20px;padding:1.35rem 1.6rem;box-shadow:0 16px 38px rgba(37,99,235,.28);margin-bottom:1.35rem;
+}
+.hero-emoji{font-size:2.4rem;line-height:1;background:rgba(255,255,255,.18);padding:.6rem .75rem;border-radius:16px;border:1px solid rgba(255,255,255,.28)}
+.hero-title{font-weight:800;font-size:1.5rem;color:#fff;line-height:1.2}
+.hero-desc{color:rgba(255,255,255,.88);font-size:.88rem;margin-top:.2rem}
+
+/* ============================ SECTION ============================ */
+.section-title{display:flex;align-items:center;gap:.55rem;font-weight:700;font-size:1.03rem;margin:.9rem 0 .6rem}
+.section-title .bar{display:inline-block;width:5px;height:20px;border-radius:4px;background:linear-gradient(180deg,var(--primary),var(--accent))}
+.card{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:1.15rem 1.25rem}
+.card.pad{padding:1.25rem 1.4rem}
+.card h3{font-size:.98rem;font-weight:700;margin-bottom:.85rem}
+
+/* ============================ METRIC ============================ */
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1rem}
+.metrics.three{grid-template-columns:repeat(3,1fr)}
+.metric{
+  background:#fff;border:1px solid var(--line);border-radius:18px;padding:1.05rem 1.15rem;
+  box-shadow:var(--shadow);transition:transform .16s ease,box-shadow .16s ease;
+}
+.metric:hover{transform:translateY(-3px);box-shadow:0 14px 32px rgba(15,23,42,.11)}
+.metric-label{font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.metric-value{font-size:1.6rem;font-weight:800;margin-top:.25rem;line-height:1.15}
+.metric-delta{font-size:.78rem;color:var(--muted);margin-top:.3rem;display:flex;align-items:center;gap:.3rem}
+
+/* ============================ GRID ============================ */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem;margin-bottom:1.1rem}
+@media(max-width:1100px){.grid2{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:640px){.metrics,.metrics.three{grid-template-columns:1fr}.main{padding:1.2rem 1rem 2rem}.sidebar{display:none}}
+
+/* ============================ TABEL ============================ */
+.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;box-shadow:0 4px 16px rgba(15,23,42,.05)}
+table{width:100%;border-collapse:collapse;font-size:.87rem;background:#fff}
+thead th{
+  background:#F1F5F9;text-align:left;padding:.7rem .9rem;font-size:.72rem;font-weight:800;
+  text-transform:uppercase;letter-spacing:.04em;color:var(--muted);white-space:nowrap;border-bottom:1px solid var(--line);
+}
+tbody td{padding:.65rem .9rem;border-bottom:1px solid #F1F5F9;color:var(--ink);vertical-align:middle}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:#F8FAFC}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.badge{display:inline-block;padding:.16rem .6rem;border-radius:999px;font-size:.73rem;font-weight:700}
+.badge-ok{background:#DCFCE7;color:#15803D}
+.badge-off{background:#F1F5F9;color:#64748B}
+.empty{padding:2.2rem 1rem;text-align:center;color:var(--muted);font-size:.9rem;background:#fff;border:1px dashed var(--line);border-radius:14px}
+
+/* ============================ BAR CHART ============================ */
+.chart{display:flex;align-items:flex-end;gap:.9rem;height:250px;padding:1rem .5rem 0;border-bottom:1px solid var(--line)}
+.chart-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:.45rem}
+.chart-bar{
+  width:100%;max-width:64px;border-radius:8px 8px 0 0;background:linear-gradient(180deg,var(--primary),var(--primary-d));
+  transition:height .5s cubic-bezier(.4,0,.2,1);position:relative;
+}
+.chart-bar:hover{filter:brightness(1.12)}
+.chart-bar .tip{
+  position:absolute;top:-26px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;
+  font-size:.7rem;padding:.2rem .45rem;border-radius:6px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .15s;
+}
+.chart-bar:hover .tip{opacity:1}
+.chart-label{font-size:.72rem;color:var(--muted);font-weight:600;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+
+/* ============================ FORM ============================ */
+.form-grid{display:grid;gap:.85rem}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:.85rem}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.85rem}
+@media(max-width:700px){.row2,.row3{grid-template-columns:1fr}}
+label{display:block;font-weight:700;font-size:.8rem;color:var(--ink);margin-bottom:.3rem}
+label .req{color:var(--err)}
+input,select,textarea{
+  width:100%;padding:.6rem .75rem;border:1px solid #CBD5E1;border-radius:10px;font-family:inherit;
+  font-size:.88rem;color:var(--ink);background:#fff;transition:border-color .15s,box-shadow .15s;
+}
+input:focus,select:focus,textarea:focus{outline:0;border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.14)}
+input.invalid,select.invalid{border-color:var(--err)}
+.hint{font-size:.75rem;color:var(--muted);margin-top:.25rem}
+.check{display:flex;align-items:center;gap:.5rem;font-weight:600;font-size:.85rem;cursor:pointer}
+.check input{width:auto;margin:0}
+
+/* ============================ BUTTON ============================ */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:.4rem;padding:.6rem 1.1rem;border-radius:11px;
+  border:1px solid transparent;font-family:inherit;font-size:.87rem;font-weight:700;cursor:pointer;
+  transition:transform .14s ease,box-shadow .14s ease,filter .14s ease;white-space:nowrap;
+}
+.btn:hover{transform:translateY(-1px);box-shadow:0 8px 18px rgba(37,99,235,.22)}
+.btn:active{transform:translateY(0)}
+.btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-d));color:#fff;box-shadow:0 6px 16px rgba(37,99,235,.32)}
+.btn-primary:hover{box-shadow:0 10px 22px rgba(37,99,235,.42)}
+.btn-ghost{background:#fff;border-color:var(--line);color:var(--ink)}
+.btn-ghost:hover{border-color:var(--primary);color:var(--primary)}
+.btn-danger{background:#fff;border-color:#FCA5A5;color:var(--err)}
+.btn-danger:hover{background:#FEF2F2;border-color:var(--err)}
+.btn-sm{padding:.35rem .65rem;font-size:.78rem;border-radius:8px}
+.btn-block{width:100%}
+.btn-row{display:flex;gap:.6rem;flex-wrap:wrap}
+
+/* ============================ TABS ============================ */
+.tabs{display:flex;gap:.3rem;border-bottom:1px solid var(--line);margin-bottom:1.1rem;overflow-x:auto}
+.tab{
+  padding:.55rem .95rem;border:0;background:transparent;font-family:inherit;font-size:.88rem;font-weight:700;
+  color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;
+  transition:color .15s,border-color .15s;
+}
+.tab:hover{color:var(--ink)}
+.tab.active{color:var(--primary);border-bottom-color:var(--primary)}
+.tab-panel{display:none;animation:fade .22s ease}
+.tab-panel.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ============================ NOTA ============================ */
+.nota{background:#fff;border:1px solid var(--line);border-radius:18px;padding:1.25rem 1.4rem;box-shadow:0 8px 26px rgba(15,23,42,.07)}
+.nota-head{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;border-bottom:2px dashed var(--line);padding-bottom:.8rem;margin-bottom:.9rem;flex-wrap:wrap}
+.nota-kode{font-weight:800;font-size:1.2rem}
+.nota-total{font-weight:800;font-size:1.35rem;color:var(--primary);text-align:right}
+.nota-meta{font-size:.85rem;color:var(--muted);line-height:1.6;margin-top:.15rem}
+.nota-kaki{margin-top:.9rem;padding-top:.8rem;border-top:2px dashed var(--line);font-size:.8rem;color:var(--muted);text-align:center}
+.total-box{
+  background:linear-gradient(120deg,#1D4ED8,#06B6D4);border-radius:16px;padding:1.05rem 1.3rem;color:#fff;
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;
+}
+.total-box .tl{font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;opacity:.85}
+.total-box .ts{font-size:.85rem;opacity:.9;margin-top:.15rem}
+.total-box .tv{font-size:1.85rem;font-weight:800;white-space:nowrap}
+
+/* ============================ KERANJANG ============================ */
+.cart-qty{display:inline-flex;align-items:center;gap:.45rem}
+.qty-btn{
+  width:26px;height:26px;border-radius:7px;border:1px solid var(--line);background:#fff;color:var(--primary);
+  font-weight:800;font-size:.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;
+  transition:background .14s,border-color .14s;
+}
+.qty-btn:hover{background:#EFF6FF;border-color:var(--primary)}
+.qty-val{min-width:44px;text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
+
+/* ============================ ALERT / TOAST ============================ */
+.alert{padding:.8rem 1rem;border-radius:12px;font-size:.87rem;font-weight:600;border:1px solid transparent;margin-bottom:1rem}
+.alert-success{background:#F0FDF4;color:#15803D;border-color:#BBF7D0}
+.alert-error{background:#FEF2F2;color:#B91C1C;border-color:#FECACA}
+.alert-info{background:#EFF6FF;color:#1D4ED8;border-color:#BFDBFE}
+.alert-warn{background:#FFFBEB;color:#B45309;border-color:#FDE68A}
+#toasts{position:fixed;top:1.2rem;right:1.2rem;z-index:9999;display:flex;flex-direction:column;gap:.6rem}
+.toast{
+  background:#fff;border-left:4px solid var(--ok);border-radius:12px;padding:.8rem 1.1rem;box-shadow:0 12px 32px rgba(15,23,42,.16);
+  font-size:.87rem;font-weight:600;max-width:380px;animation:slideIn .28s cubic-bezier(.4,0,.2,1);
+}
+.toast.error{border-left-color:var(--err)}
+.toast.info{border-left-color:var(--primary)}
+@keyframes slideIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}
+
+/* ============================ MODAL ============================ */
+.modal-bg{
+  position:fixed;inset:0;background:rgba(15,23,42,.55);backdrop-filter:blur(3px);z-index:900;
+  display:none;align-items:center;justify-content:center;padding:1.5rem;
+}
+.modal-bg.open{display:flex;animation:fade .2s ease}
+.modal{
+  background:#fff;border-radius:20px;max-width:620px;width:100%;max-height:90vh;overflow-y:auto;
+  box-shadow:0 24px 60px rgba(15,23,42,.3);animation:pop .25s cubic-bezier(.4,0,.2,1);
+}
+.modal.wide{max-width:900px}
+@keyframes pop{from{opacity:0;transform:scale(.94) translateY(14px)}to{opacity:1;transform:none}}
+.modal-head{
+  padding:1.15rem 1.4rem;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;
+  align-items:center;position:sticky;top:0;background:#fff;border-radius:20px 20px 0 0;z-index:2;
+}
+.modal-title{font-weight:800;font-size:1.1rem}
+.modal-close{
+  border:0;background:#F1F5F9;width:32px;height:32px;border-radius:9px;font-size:1.1rem;cursor:pointer;color:var(--muted);
+  display:flex;align-items:center;justify-content:center;transition:background .15s;
+}
+.modal-close:hover{background:#E2E8F0}
+.modal-body{padding:1.4rem}
+.modal-foot{padding:1rem 1.4rem;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:.6rem;background:#FCFDFE;border-radius:0 0 20px 20px}
+
+/* ============================ MISC ============================ */
+.kv{display:flex;justify-content:space-between;gap:1rem;padding:.5rem 0;border-bottom:1px dashed var(--line);font-size:.87rem}
+.kv:last-child{border-bottom:0}
+.kv .k{color:var(--muted)}
+.kv .v{font-weight:700;text-align:right}
+.mini-bar{height:7px;border-radius:4px;background:linear-gradient(90deg,var(--primary),var(--accent));min-width:3px}
+.list-pill{
+  display:inline-block;background:#F1F5F9;border-radius:8px;padding:.3rem .6rem;font-size:.8rem;font-weight:600;
+  color:var(--ink);margin:.15rem .2rem .15rem 0;
+}
+.muted{color:var(--muted)}
+.small{font-size:.8rem}
+.spacer{margin-top:1rem}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- ======================= SIDEBAR ======================= -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-logo">🧺</div>
+      <div class="brand-text">
+        <div class="brand-name">ULTRA LAUNDRY</div>
+        <div class="brand-sub">Administrasi Transaksi</div>
+      </div>
+    </div>
+    <div class="nav-label">🧭 NAVIGASI</div>
+    <button class="nav-item active" data-page="beranda">🏠 &nbsp;Beranda</button>
+    <button class="nav-item" data-page="pelanggan">👥 &nbsp;Data Pelanggan</button>
+    <button class="nav-item" data-page="kategori">🧺 &nbsp;Kategori &amp; Layanan</button>
+    <button class="nav-item" data-page="kasir">🛒 &nbsp;Kasir</button>
+    <div class="sidebar-foot">
+      <b>Ultra Laundry</b><br>
+      Sistem Administrasi Transaksi<br>
+      Data lokal · <code>localStorage</code><br><br>
+      <span style="color:#64748B">Data tersimpan otomatis di peramban dan tetap ada walau aplikasi ditutup.</span>
+      <button class="link-btn" onclick="resetData()">↺ Reset ke data awal</button>
+      <button class="link-btn" onclick="eksporJSON()">⬇ Unduh data (.json)</button>
+    </div>
+  </aside>
+
+  <!-- ======================= MAIN ======================= -->
+  <main class="main" id="main"></main>
+</div>
+
+<div id="toasts"></div>
+
+<!-- ======================= MODAL ======================= -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal" id="modalBox">
+    <div class="modal-head">
+      <div class="modal-title" id="modalTitle">Judul</div>
+      <button class="modal-close" onclick="tutupModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-foot" id="modalFoot"></div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   LAPISAN DATA —equivalent database.py
+   Menyimpan 5 entitas: kategori, layanan, pelanggan, transaksi, detail_transaksi
+   Aturan ERD revisi:
+     - layanan memiliki id_kategori
+     - no_hp pelanggan UNIQUE
+     - detail_transaksi PK gabungan (id_transaksi, id_layanan), tanpa id_kategori
+     - harga_satuan disalin dari tarif saat nota dibuat
+     - transaksi TIDAK menyimpan total (dihitung dinamis)
+   ===================================================================== */
+const SEED = {
+ "kategori": [
+  {
+   "id_kategori": 1,
+   "nama_kategori": "Pakaian",
+   "keterangan": "Cucian baju, kemeja, celana, dan pakaian harian"
+  },
+  {
+   "id_kategori": 2,
+   "nama_kategori": "Karpet",
+   "keterangan": "Cucian karpet lantai dan permadani ruangan"
+  },
+  {
+   "id_kategori": 3,
+   "nama_kategori": "Boneka",
+   "keterangan": "Cucian boneka berbagai ukuran"
+  },
+  {
+   "id_kategori": 4,
+   "nama_kategori": "Selimut",
+   "keterangan": "Cucian selimut tidur dan bedcover"
+  }
+ ],
+ "layanan": [
+  {
+   "id_layanan": 1,
+   "kode_layanan": "LYN01-PAK",
+   "nama_layanan": "Cuci Komplit Reguler",
+   "satuan": "kg",
+   "tarif_per_kg": 7000,
+   "id_kategori": 1,
+   "aktif": 1
+  },
+  {
+   "id_layanan": 2,
+   "kode_layanan": "LYN02-PAK",
+   "nama_layanan": "Cuci Komplit Express",
+   "satuan": "kg",
+   "tarif_per_kg": 10000,
+   "id_kategori": 1,
+   "aktif": 1
+  },
+  {
+   "id_layanan": 3,
+   "kode_layanan": "LYN03-PAK",
+   "nama_layanan": "Cuci Kering",
+   "satuan": "kg",
+   "tarif_per_kg": 5000,
+   "id_kategori": 1,
+   "aktif": 1
+  },
+  {
+   "id_layanan": 4,
+   "kode_layanan": "LYN04-KAR",
+   "nama_layanan": "Cuci Karpet Reguler",
+   "satuan": "kg",
+   "tarif_per_kg": 9000,
+   "id_kategori": 2,
+   "aktif": 1
+  },
+  {
+   "id_layanan": 5,
+   "kode_layanan": "LYN05-KAR",
+   "nama_layanan": "Cuci Karpet Express",
+   "satuan": "kg",
+   "tarif_per_kg": 13000,
+   "id_kategori": 2,
+   "aktif": 1
+  },
+  {
+   "id_layanan": 6,
+   "kode_layanan": "LYN06-KAR",
+   "nama_layanan": "Cuci Karpet Kering",
+   "satuan": "kg",
+   "tarif_per_kg": 6000,
+   "id_kategori": 2,
+   "aktif": 1
+  },
+  {
+   "id_layanan": 7,
+   "kode_layanan": "LYN07-BON",
+   "nama_layanan": "Cuci Boneka Reguler",
+   "satuan": "kg",
+   "tarif_per_kg": 12000,
+   "id_kategori": 3,
+   "aktif": 1
+  },
+  {
+   "id_layanan": 8,
+   "kode_layanan": "LYN08-BON",
+   "nama_layanan": "Cuci Boneka Express",
+   "satuan": "kg",
+   "tarif_per_kg": 16000,
+   "id_kategori": 3,
+   "aktif": 1
+  },
+  {
+   "id_layanan": 9,
+   "kode_layanan": "LYN09-BON",
+   "nama_layanan": "Cuci Boneka Kering",
+   "satuan": "kg",
+   "tarif_per_kg": 9000,
+   "id_kategori": 3,
+   "aktif": 1
+  },
+  {
+   "id_layanan": 10,
+   "kode_layanan": "LYN10-SEL",
+   "nama_layanan": "Cuci Selimut Reguler",
+   "satuan": "kg",
+   "tarif_per_kg": 8000,
+   "id_kategori": 4,
+   "aktif": 1
+  },
+  {
+   "id_layanan": 11,
+   "kode_layanan": "LYN11-SEL",
+   "nama_layanan": "Cuci Selimut Express",
+   "satuan": "kg",
+   "tarif_per_kg": 11000,
+   "id_kategori": 4,
+   "aktif": 1
+  },
+  {
+   "id_layanan": 12,
+   "kode_layanan": "LYN12-SEL",
+   "nama_layanan": "Cuci Selimut Kering",
+   "satuan": "kg",
+   "tarif_per_kg": 7000,
+   "id_kategori": 4,
+   "aktif": 1
+  }
+ ],
+ "pelanggan": [
+  {
+   "id_pelanggan": 1,
+   "nama_pelanggan": "Nadine Azzahra",
+   "no_hp": "081234567891",
+   "alamat": "Jl. Banjarsari Selatan No. 12"
+  },
+  {
+   "id_pelanggan": 2,
+   "nama_pelanggan": "Rayhan Mahendra",
+   "no_hp": "08571234334",
+   "alamat": "Kost Griya Tembalang Blok A3"
+  },
+  {
+   "id_pelanggan": 3,
+   "nama_pelanggan": "Ziva Maharani",
+   "no_hp": "082198765433",
+   "alamat": "Perum Bukit Diponegoro C-15"
+  },
+  {
+   "id_pelanggan": 4,
+   "nama_pelanggan": "Daffa Pratama",
+   "no_hp": "081345678904",
+   "alamat": "Jl. Gondang Raya No. 28"
+  },
+  {
+   "id_pelanggan": 5,
+   "nama_pelanggan": "REVA",
+   "no_hp": "0812576890",
+   "alamat": "Jl.Papandayan No.35, Kota Semarang, Jawa Tengah"
+  }
+ ],
+ "transaksi": [
+  {
+   "id_transaksi": 1,
+   "kode_nota": "NOTA-001",
+   "tanggal": "2026-10-12",
+   "id_pelanggan": 1
+  },
+  {
+   "id_transaksi": 2,
+   "kode_nota": "NOTA-002",
+   "tanggal": "2026-10-13",
+   "id_pelanggan": 2
+  },
+  {
+   "id_transaksi": 3,
+   "kode_nota": "NOTA-003",
+   "tanggal": "2026-10-14",
+   "id_pelanggan": 3
+  },
+  {
+   "id_transaksi": 4,
+   "kode_nota": "NOTA-004",
+   "tanggal": "2026-10-14",
+   "id_pelanggan": 4
+  },
+  {
+   "id_transaksi": 5,
+   "kode_nota": "NOTA-005",
+   "tanggal": "2026-10-16",
+   "id_pelanggan": 1
+  },
+  {
+   "id_transaksi": 6,
+   "kode_nota": "NOTA-006",
+   "tanggal": "2026-10-19",
+   "id_pelanggan": 5
+  }
+ ],
+ "detail_transaksi": [
+  {
+   "id_transaksi": 1,
+   "id_layanan": 1,
+   "berat": 5.0,
+   "harga_satuan": 7000
+  },
+  {
+   "id_transaksi": 2,
+   "id_layanan": 11,
+   "berat": 3.0,
+   "harga_satuan": 10000
+  },
+  {
+   "id_transaksi": 3,
+   "id_layanan": 9,
+   "berat": 2.0,
+   "harga_satuan": 5000
+  },
+  {
+   "id_transaksi": 4,
+   "id_layanan": 4,
+   "berat": 6.0,
+   "harga_satuan": 7000
+  },
+  {
+   "id_transaksi": 5,
+   "id_layanan": 1,
+   "berat": 1.5,
+   "harga_satuan": 7000
+  },
+  {
+   "id_transaksi": 6,
+   "id_layanan": 5,
+   "berat": 4.0,
+   "harga_satuan": 10000
+  }
+ ]
+};
+
+const KUNCI = 'ultralaundry_db_v1';
+let DB = null;
+
+function muatDB(){
+  try{
+    const mentah = localStorage.getItem(KUNCI);
+    if(mentah){ DB = JSON.parse(mentah); return; }
+  }catch(e){ /* localStorage tidak tersedia -> pakai seed */ }
+  DB = JSON.parse(JSON.stringify(SEED));
+  simpanDB();
+}
+function simpanDB(){
+  try{ localStorage.setItem(KUNCI, JSON.stringify(DB)); }catch(e){}
+}
+function resetData(){
+  if(!confirm('Kembalikan semua data ke kondisi awal? Semua perubahan akan hilang.')) return;
+  DB = JSON.parse(JSON.stringify(SEED));
+  simpanDB();
+  toast('Data dikembalikan ke kondisi awal','info');
+  render();
+}
+
+/* ---------------------------------------------------------------- utils */
+function rp(n){ return 'Rp' + Math.round(Number(n)||0).toLocaleString('id-ID'); }
+function fmtBerat(n){ const v = Number(n)||0; return (Math.round(v*100)/100).toString(); }
+function esc(s){ return String(s??'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function today(){ return new Date().toISOString().slice(0,10); }
+function tglIndo(iso){
+  if(!iso) return '-';
+  const [y,m,d] = iso.split('-');
+  const bulan = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+  return `${d} ${bulan[Number(m)-1]} ${y}`;
+}
+function toast(pesan, jenis='sukses'){
+  const el = document.createElement('div');
+  el.className = 'toast' + (jenis==='error'?' error':jenis==='info'?' info':'');
+  el.innerHTML = pesan;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(()=>{ el.style.transition='opacity .3s,transform .3s'; el.style.opacity='0'; el.style.transform='translateX(40px)'; setTimeout(()=>el.remove(),300); }, 3600);
+}
+
+/* ---------------------------------------------------------- query layer */
+const Q = {
+  kategori:   () => DB.kategori,
+  layanan:    () => DB.layanan,
+  pelanggan:  () => DB.pelanggan,
+  layananAktif: () => DB.layanan.filter(l => l.aktif === 1),
+  kategoriById: id => DB.kategori.find(k => k.id_kategori === id),
+  layananById:  id => DB.layanan.find(l => l.id_layanan === id),
+  pelangganById:id => DB.pelanggan.find(p => p.id_pelanggan === id),
+  /* total nota dihitung dinamis dari detail_transaksi */
+  detailNota: idTrx => DB.detail_transaksi.filter(d => d.id_transaksi === idTrx),
+  subtotal: idTrx => Q.detailNota(idTrx).reduce((s,d) => s + d.berat * d.harga_satuan, 0),
+  totalNota: idTrx => Q.subtotal(idTrx),
+  totalPendapatan: () => DB.detail_transaksi.reduce((s,d) => s + d.berat * d.harga_satuan, 0),
+  totalBerat: () => DB.detail_transaksi.reduce((s,d) => s + d.berat, 0),
+  jumlahTransaksi: () => DB.transaksi.length,
+  riwayatPelanggan: idPel => DB.transaksi.filter(t => t.id_pelanggan === idPel)
+                            .sort((a,b) => b.tanggal.localeCompare(a.tanggal) || b.id_transaksi - a.id_transaksi),
+  kodeNotaBerikutnya: () => {
+    let maks = 0;
+    DB.transaksi.forEach(t => {
+      const m = String(t.kode_nota).match(/^NOTA-(\d+)$/);
+      if(m) maks = Math.max(maks, parseInt(m[1],10));
+    });
+    return 'NOTA-' + String(maks+1).padStart(3,'0');
+  },
+  nextId(arr, key){
+    return arr.reduce((m,x) => Math.max(m, Number(x[key])||0), 0) + 1;
+  }
+};
+
+/* ---------------------------------------------------------- mutasi data */
+function tambahPelanggan(nama, noHp, alamat){
+  noHp = noHp.trim();
+  if(!nama.trim() || !noHp || !alamat.trim()) return {ok:false, pesan:'Nama, nomor HP, dan alamat wajib diisi.'};
+  if(!/^\d+$/.test(noHp)) return {ok:false, pesan:'Nomor HP harus berupa angka saja.'};
+  if(noHp.length < 10 || noHp.length > 14) return {ok:false, pesan:'Nomor HP harus terdiri dari 10 sampai 14 digit.'};
+  if(DB.pelanggan.some(p => p.no_hp.toLowerCase() === noHp.toLowerCase()))
+    return {ok:false, pesan:`Nomor HP ${noHp} sudah terdaftar. Gunakan nomor lain.`};
+  DB.pelanggan.push({id_pelanggan: Q.nextId(DB.pelanggan,'id_pelanggan'), nama_pelanggan: nama.trim(), no_hp: noHp, alamat: alamat.trim()});
+  simpanDB(); return {ok:true, pesan:`Pelanggan ${nama.trim()} berhasil disimpan.`};
+}
+function ubahPelanggan(id, nama, noHp, alamat){
+  noHp = noHp.trim();
+  if(!nama.trim() || !noHp || !alamat.trim()) return {ok:false, pesan:'Nama, nomor HP, dan alamat wajib diisi.'};
+  if(!/^\d+$/.test(noHp)) return {ok:false, pesan:'Nomor HP harus berupa angka saja.'};
+  if(noHp.length < 10 || noHp.length > 14) return {ok:false, pesan:'Nomor HP harus terdiri dari 10 sampai 14 digit.'};
+  if(DB.pelanggan.some(p => p.no_hp.toLowerCase() === noHp.toLowerCase() && p.id_pelanggan !== id))
+    return {ok:false, pesan:`Nomor HP ${noHp} sudah dipakai pelanggan lain.`};
+  const p = Q.pelangganById(id);
+  if(!p) return {ok:false, pesan:'Pelanggan tidak ditemukan.'};
+  Object.assign(p, {nama_pelanggan:nama.trim(), no_hp:noHp, alamat:alamat.trim()});
+  simpanDB(); return {ok:true, pesan:'Data pelanggan berhasil diperbarui.'};
+}
+function hapusPelanggan(id){
+  if(DB.transaksi.some(t => t.id_pelanggan === id))
+    return {ok:false, pesan:'Pelanggan masih memiliki nota transaksi, jadi tidak bisa dihapus.'};
+  DB.pelanggan = DB.pelanggan.filter(p => p.id_pelanggan !== id);
+  simpanDB(); return {ok:true, pesan:'Pelanggan berhasil dihapus.'};
+}
+function tambahKategori(nama, ket){
+  if(!nama.trim()) return {ok:false, pesan:'Nama kategori wajib diisi.'};
+  if(DB.kategori.some(k => k.nama_kategori.toLowerCase() === nama.trim().toLowerCase()))
+    return {ok:false, pesan:`Kategori "${nama.trim()}" sudah ada.`};
+  DB.kategori.push({id_kategori: Q.nextId(DB.kategori,'id_kategori'), nama_kategori: nama.trim(), keterangan: (ket||'').trim()});
+  simpanDB(); return {ok:true, pesan:`Kategori ${nama.trim()} berhasil disimpan.`};
+}
+function ubahKategori(id, nama, ket){
+  if(!nama.trim()) return {ok:false, pesan:'Nama kategori wajib diisi.'};
+  if(DB.kategori.some(k => k.nama_kategori.toLowerCase() === nama.trim().toLowerCase() && k.id_kategori !== id))
+    return {ok:false, pesan:`Kategori "${nama.trim()}" sudah ada.`};
+  const k = Q.kategoriById(id);
+  if(!k) return {ok:false, pesan:'Kategori tidak ditemukan.'};
+  Object.assign(k, {nama_kategori:nama.trim(), keterangan:(ket||'').trim()});
+  simpanDB(); return {ok:true, pesan:'Kategori berhasil diperbarui.'};
+}
+function hapusKategori(id){
+  if(DB.layanan.some(l => l.id_kategori === id))
+    return {ok:false, pesan:'Kategori masih memiliki layanan, jadi tidak bisa dihapus.'};
+  DB.kategori = DB.kategori.filter(k => k.id_kategori !== id);
+  simpanDB(); return {ok:true, pesan:'Kategori berhasil dihapus.'};
+}
+function tambahLayanan(kode, nama, satuan, tarif, idKat){
+  kode = (kode||'').trim().toUpperCase(); nama = (nama||'').trim(); satuan = (satuan||'kg').trim();
+  if(!kode || !nama || !satuan) return {ok:false, pesan:'Kode, nama layanan, dan satuan wajib diisi.'};
+  if(DB.layanan.some(l => l.kode_layanan.toLowerCase() === kode.toLowerCase()))
+    return {ok:false, pesan:`Kode layanan ${kode} sudah dipakai.`};
+  if(tarif < 0) return {ok:false, pesan:'Harga satuan tidak boleh negatif.'};
+  DB.layanan.push({id_layanan: Q.nextId(DB.layanan,'id_layanan'), kode_layanan:kode, nama_layanan:nama, satuan, tarif_per_kg:Number(tarif), id_kategori:idKat, aktif:1});
+  simpanDB(); return {ok:true, pesan:`Layanan ${nama} berhasil disimpan.`};
+}
+function ubahLayanan(id, kode, nama, satuan, tarif, idKat){
+  kode = (kode||'').trim().toUpperCase(); nama = (nama||'').trim(); satuan = (satuan||'kg').trim();
+  if(!kode || !nama || !satuan) return {ok:false, pesan:'Kode, nama layanan, dan satuan wajib diisi.'};
+  if(DB.layanan.some(l => l.kode_layanan.toLowerCase() === kode.toLowerCase() && l.id_layanan !== id))
+    return {ok:false, pesan:`Kode layanan ${kode} sudah dipakai.`};
+  const l = Q.layananById(id);
+  if(!l) return {ok:false, pesan:'Layanan tidak ditemukan.'};
+  Object.assign(l, {kode_layanan:kode, nama_layanan:nama, satuan, tarif_per_kg:Number(tarif), id_kategori:idKat});
+  simpanDB(); return {ok:true, pesan:'Layanan berhasil diperbarui.'};
+}
+function hapusLayanan(id){
+  if(DB.detail_transaksi.some(d => d.id_layanan === id))
+    return {ok:false, pesan:'Layanan sudah dipakai nota lama, jadi tidak bisa dihapus. Gunakan status Nonaktif.'};
+  DB.layanan = DB.layanan.filter(l => l.id_layanan !== id);
+  simpanDB(); return {ok:true, pesan:'Layanan berhasil dihapus.'};
+}
+function setAktifLayanan(id, aktif){
+  const l = Q.layananById(id);
+  if(!l) return {ok:false, pesan:'Layanan tidak ditemukan.'};
+  l.aktif = aktif ? 1 : 0;
+  simpanDB(); return {ok:true, pesan:`Status layanan diubah menjadi ${aktif?'Aktif':'Nonaktif'}.`};
+}
+/* Simpan nota: berat layanan sama digabung, harga_satuan disalin dari tarif saat itu */
+function simpanTransaksi(kodeNota, tanggal, idPelanggan, keranjang){
+  kodeNota = (kodeNota||'').trim().toUpperCase();
+  if(!kodeNota) return {ok:false, pesan:'Kode nota wajib diisi.'};
+  if(!keranjang.length) return {ok:false, pesan:'Nota wajib memuat minimal satu baris cucian.'};
+  if(DB.transaksi.some(t => t.kode_nota.toLowerCase() === kodeNota.toLowerCase()))
+    return {ok:false, pesan:`Kode nota ${kodeNota} sudah dipakai.`};
+  const gabung = {};
+  keranjang.forEach(i => { gabung[i.id_layanan] = (gabung[i.id_layanan]||0) + Number(i.berat); });
+  const idTrx = Q.nextId(DB.transaksi,'id_transaksi');
+  DB.transaksi.push({id_transaksi:idTrx, kode_nota:kodeNota, tanggal, id_pelanggan:idPelanggan});
+  Object.entries(gabung).forEach(([idLay, berat]) => {
+    if(berat <= 0) return;
+    const l = Q.layananById(Number(idLay));
+    if(!l) return;
+    DB.detail_transaksi.push({id_transaksi:idTrx, id_layanan:Number(idLay), berat:Number(berat), harga_satuan:l.tarif_per_kg});
+  });
+  simpanDB();
+  return {ok:true, pesan:`Nota ${kodeNota} berhasil disimpan.`, id: kodeNota};
+}
+
+/* =====================================================================
+   RENDERER
+   ===================================================================== */
+let HALAMAN = 'beranda';
+let CART = [];               /* keranjang kasir (setara st.session_state) */
+let TAB = {pelanggan:0, kategori:0, kasir:0};
+const HIST = [];
+
+function render(){
+  muatDB();
+  const m = document.getElementById('main');
+  const judul = {beranda:'Beranda', pelanggan:'Data Pelanggan', kategori:'Kategori & Layanan', kasir:'Kasir'};
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.page === HALAMAN));
+  if(HALAMAN==='beranda') m.innerHTML = renderBeranda();
+  else if(HALAMAN==='pelanggan') m.innerHTML = renderPelanggan();
+  else if(HALAMAN==='kategori') m.innerHTML = renderKategori();
+  else m.innerHTML = renderKasir();
+  document.title = `Ultra Laundry — ${judul[HALAMAN]}`;
+  bindAfterRender();
+}
+
+/* ------------------------------------------------------------ BERANDA */
+function renderBeranda(){
+  const total = Q.totalPendapatan();
+  const jmlTrx = Q.jumlahTransaksi();
+  const jmlPel = DB.pelanggan.length;
+  const jmlLay = Q.layananAktif().length;
+  const berat = Q.totalBerat();
+  const hariIni = today();
+  const trxHariIni = DB.transaksi.filter(t => t.tanggal === hariIni);
+  const omzetHariIni = trxHariIni.reduce((s,t) => s + Q.totalNota(t.id_transaksi), 0);
+  const rata = jmlTrx ? total/jmlTrx : 0;
+
+  /* pendapatan per kategori */
+  const perKat = DB.kategori.map(k => {
+    const layIds = DB.layanan.filter(l => l.id_kategori === k.id_kategori).map(l => l.id_layanan);
+    const v = DB.detail_transaksi.filter(d => layIds.includes(d.id_layanan))
+                                 .reduce((s,d) => s + d.berat*d.harga_satuan, 0);
+    return {nama:k.nama_kategori, total:v};
+  }).sort((a,b) => b.total - a.total);
+  const maksKat = Math.max(...perKat.map(k => k.total), 1);
+
+  /* pendapatan per layanan */
+  const perLay = DB.layanan.map(l => {
+    const v = DB.detail_transaksi.filter(d => d.id_layanan === l.id_layanan)
+                                 .reduce((s,d) => s + d.berat*d.harga_satuan, 0);
+    return {l, total:v};
+  }).filter(x => x.total > 0).sort((a,b) => b.total - a.total);
+
+  /* tren 30 hari */
+  const hari = [];
+  for(let i = 29; i >= 0; i--){
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const iso = d.toISOString().slice(0,10);
+    const v = DB.transaksi.filter(t => t.tanggal === iso).reduce((s,t) => s + Q.totalNota(t.id_transaksi), 0);
+    hari.push({iso, total:v});
+  }
+  const maksHari = Math.max(...hari.map(h => h.total), 1);
+  const adaTren = hari.some(h => h.total > 0);
+
+  /* 5 transaksi terbaru */
+  const terbaru = [...DB.transaksi].sort((a,b) => b.tanggal.localeCompare(a.tanggal) || b.id_transaksi - a.id_transaksi).slice(0,5);
+
+  /* pelanggan teratas */
+  const teratas = DB.pelanggan.map(p => {
+    const trx = Q.riwayatPelanggan(p.id_pelanggan);
+    const tot = trx.reduce((s,t) => s + Q.totalNota(t.id_transaksi), 0);
+    return {p, jml:trx.length, total:tot};
+  }).filter(x => x.jml > 0).sort((a,b) => b.total - a.total).slice(0,6);
+
+  return `
+  <div class="hero">
+    <div class="hero-emoji">🏠</div>
+    <div>
+      <div class="hero-title">Dashboard Ultra Laundry</div>
+      <div class="hero-desc">Ringkasan omzet, transaksi, dan aktivitas laundry hari ini.</div>
+    </div>
+  </div>
+
+  <div class="metrics">
+    <div class="metric">
+      <div class="metric-label">💰 Total Omzet</div>
+      <div class="metric-value">${rp(total)}</div>
+      <div class="metric-delta">📅 ${rp(omzetHariIni)} hari ini</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">🧾 Jumlah Nota</div>
+      <div class="metric-value">${jmlTrx}</div>
+      <div class="metric-delta">📅 ${trxHariIni.length} nota hari ini</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">👥 Jumlah Pelanggan</div>
+      <div class="metric-value">${jmlPel}</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">🧺 Layanan Aktif</div>
+      <div class="metric-value">${jmlLay}</div>
+      <div class="metric-delta">🗂️ ${DB.kategori.length} kategori</div>
+    </div>
+  </div>
+
+  <div class="metrics three">
+    <div class="metric"><div class="metric-label">⚖️ Total Berat Dicuci</div><div class="metric-value">${fmtBerat(berat)} kg</div></div>
+    <div class="metric"><div class="metric-label">📊 Rata-rata per Nota</div><div class="metric-value">${rp(rata)}</div></div>
+    <div class="metric"><div class="metric-label">📅 Nota Hari Ini</div><div class="metric-value">${trxHariIni.length}</div></div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h3>📊 Pendapatan per Kategori</h3>
+      ${perKat.length ? `<div class="chart">
+        ${perKat.map(k => `<div class="chart-col">
+          <div class="chart-bar" style="height:${Math.max((k.total/maksKat)*100, 2)}%">
+            <span class="tip">${rp(k.total)}</span>
+          </div>
+          <div class="chart-label">${esc(k.nama)}</div>
+        </div>`).join('')}
+      </div>` : '<div class="empty">Belum ada transaksi.</div>'}
+    </div>
+    <div class="card">
+      <h3>🏷️ Pendapatan per Layanan</h3>
+      ${perLay.length ? `<div class="table-wrap"><table>
+        <thead><tr><th>Layanan</th><th>Kategori</th><th class="num">Berat</th><th class="num">Pendapatan</th></tr></thead>
+        <tbody>${perLay.map(x => `<tr>
+          <td><b>${esc(x.l.nama_layanan)}</b></td>
+          <td class="muted small">${esc(Q.kategoriById(x.l.id_kategori)?.nama_kategori || '-')}</td>
+          <td class="num">${fmtBerat(DB.detail_transaksi.filter(d => d.id_layanan===x.l.id_layanan).reduce((s,d)=>s+d.berat,0))} kg</td>
+          <td class="num"><b>${rp(x.total)}</b></td>
+        </tr>`).join('')}</tbody></table></div>` : '<div class="empty">Belum ada layanan yang terjual.</div>'}
+    </div>
+  </div>
+
+  <div class="card pad" style="margin-bottom:1.1rem">
+    <h3>📈 Tren Pendapatan 30 Hari Terakhir</h3>
+    ${adaTren ? `<div class="chart">
+      ${hari.map(h => `<div class="chart-col">
+        <div class="chart-bar" style="height:${h.total>0 ? Math.max((h.total/maksHari)*100,4) : 1.5}%;background:${h.total>0 ? 'linear-gradient(180deg,var(--accent),#0891B2)' : '#CBD5E1'}">
+          <span class="tip">${tglIndo(h.iso)} · ${rp(h.total)}</span>
+        </div>
+        <div class="chart-label">${h.iso.slice(8)}/${h.iso.slice(5,7)}</div>
+      </div>`).join('')}
+    </div>` : '<div class="empty">Belum ada transaksi pada 30 hari terakhir.</div>'}
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h3>🕒 5 Transaksi Terbaru</h3>
+      ${terbaru.length ? `<div class="table-wrap"><table>
+        <thead><tr><th>Kode Nota</th><th>Tanggal</th><th>Pelanggan</th><th class="num">Total</th></tr></thead>
+        <tbody>${terbaru.map(t => `<tr>
+          <td><b>${esc(t.kode_nota)}</b></td>
+          <td class="muted small">${tglIndo(t.tanggal)}</td>
+          <td>${esc(Q.pelangganById(t.id_pelanggan)?.nama_pelanggan || '-')}</td>
+          <td class="num"><b>${rp(Q.totalNota(t.id_transaksi))}</b></td>
+        </tr>`).join('')}</tbody></table></div>` : '<div class="empty">Belum ada transaksi.</div>'}
+    </div>
+    <div class="card">
+      <h3>🏆 Pelanggan Teratas</h3>
+      ${teratas.length ? `<div class="table-wrap"><table>
+        <thead><tr><th>Pelanggan</th><th>No. HP</th><th class="num">Nota</th><th class="num">Total</th></tr></thead>
+        <tbody>${teratas.map(x => `<tr>
+          <td><b>${esc(x.p.nama_pelanggan)}</b></td>
+          <td class="muted small">${esc(x.p.no_hp)}</td>
+          <td class="num">${x.jml}</td>
+          <td class="num"><b>${rp(x.total)}</b></td>
+        </tr>`).join('')}</tbody></table></div>` : '<div class="empty">Belum ada pelanggan yang bertransaksi.</div>'}
+    </div>
+  </div>`;
+}
+
+/* ------------------------------------------------------ DATA PELANGGAN */
+function renderPelanggan(){
+  const q = (document.getElementById('qPel')?.value || '').trim().toLowerCase();
+  const data = DB.pelanggan.filter(p => !q || p.nama_pelanggan.toLowerCase().includes(q) || p.no_hp.includes(q))
+    .map(p => {
+      const trx = Q.riwayatPelanggan(p.id_pelanggan);
+      return {p, jml:trx.length, total:trx.reduce((s,t) => s + Q.totalNota(t.id_transaksi), 0)};
+    });
+  const tabs = ['📋 Daftar Pelanggan','➕ Tambah','✏️ Ubah','🗑️ Hapus','🧾 Riwayat Transaksi'];
+  let isi = '';
+
+  if(TAB.pelanggan === 0){
+    isi = `
+      <div class="form-grid" style="max-width:420px;margin-bottom:1rem">
+        <div><label>🔍 Cari pelanggan (nama atau nomor HP)</label>
+        <input id="qPel" placeholder="Ketik nama / no. HP ..." value="${esc(q)}"></div>
+      </div>
+      <div class="section-title"><span class="bar"></span>Daftar Pelanggan (${data.length})</div>
+      ${data.length ? `<div class="table-wrap"><table>
+        <thead><tr><th>ID</th><th>Nama Pelanggan</th><th>No. HP</th><th>Alamat</th><th class="num">Jumlah Nota</th><th class="num">Total Belanja</th><th></th></tr></thead>
+        <tbody>${data.map(x => `<tr>
+          <td class="num muted">${x.p.id_pelanggan}</td>
+          <td><b>${esc(x.p.nama_pelanggan)}</b></td>
+          <td>${esc(x.p.no_hp)}</td>
+          <td class="muted small">${esc(x.p.alamat)}</td>
+          <td class="num">${x.jml}</td>
+          <td class="num"><b>${rp(x.total)}</b></td>
+          <td class="num"><button class="btn btn-ghost btn-sm" onclick="bukaModalRiwayat(${x.p.id_pelanggan})">Riwayat</button></td>
+        </tr>`).join('')}</tbody></table></div>` : '<div class="empty">Belum ada data pelanggan. Gunakan tab <b>Tambah</b> untuk mendaftarkan pelanggan baru.</div>'}
+    `;
+  } else if(TAB.pelanggan === 1){
+    isi = `
+      <div class="section-title"><span class="bar"></span>Tambah Pelanggan Baru</div>
+      <div class="card pad" style="max-width:640px">
+        <div class="form-grid">
+          <div class="row2">
+            <div><label>Nama Pelanggan <span class="req">*</span></label><input id="npNama" placeholder="Contoh: Nadine Azzahra"></div>
+            <div><label>Nomor HP <span class="req">*</span> (angka saja)</label><input id="npHp" placeholder="Contoh: 081234567891"></div>
+          </div>
+          <div><label>Alamat <span class="req">*</span></label><input id="npAlamat" placeholder="Contoh: Jl. Banjarsari Selatan No. 12"></div>
+          <div class="hint">⚠️ Nomor HP harus unik dan terdiri dari 10–14 digit angka.</div>
+          <div class="btn-row"><button class="btn btn-primary" onclick="simpanPelangganBaru()">💾 Simpan Pelanggan</button></div>
+        </div>
+      </div>`;
+  } else if(TAB.pelanggan === 2){
+    isi = DB.pelanggan.length ? `
+      <div class="section-title"><span class="bar"></span>Ubah Data Pelanggan</div>
+      <div class="card pad" style="max-width:640px">
+        <div class="form-grid">
+          <div><label>Pilih pelanggan</label><select id="upPilih">${DB.pelanggan.map(p => `<option value="${p.id_pelanggan}">${esc(p.nama_pelanggan)} · ${esc(p.no_hp)}</option>`).join('')}</select></div>
+          <div class="row2">
+            <div><label>Nama Pelanggan <span class="req">*</span></label><input id="upNama"></div>
+            <div><label>Nomor HP <span class="req">*</span></label><input id="upHp"></div>
+          </div>
+          <div><label>Alamat <span class="req">*</span></label><input id="upAlamat"></div>
+          <div class="btn-row"><button class="btn btn-primary" onclick="simpanPelangganUbah()">💾 Simpan Perubahan</button></div>
+        </div>
+      </div>` : '<div class="empty">Belum ada pelanggan yang dapat diubah.</div>';
+  } else if(TAB.pelanggan === 3){
+    isi = DB.pelanggan.length ? `
+      <div class="section-title"><span class="bar"></span>Hapus Pelanggan</div>
+      <div class="alert alert-warn">⚠️ Pelanggan yang masih memiliki nota transaksi <b>tidak bisa dihapus</b> (aturan ON DELETE RESTRICT).</div>
+      <div class="card pad" style="max-width:640px">
+        <div class="form-grid">
+          <div><label>Pilih pelanggan</label><select id="hpPilih">${DB.pelanggan.map(p => `<option value="${p.id_pelanggan}">${esc(p.nama_pelanggan)} · ${esc(p.no_hp)}</option>`).join('')}</select></div>
+          <div id="hpInfo" class="hint"></div>
+          <label class="check"><input type="checkbox" id="hpYakin"> Ya, saya yakin ingin menghapus pelanggan ini</label>
+          <div class="btn-row"><button class="btn btn-danger" onclick="hapusPelangganAksi()">🗑️ Hapus Pelanggan</button></div>
+        </div>
+      </div>` : '<div class="empty">Belum ada pelanggan yang dapat dihapus.</div>';
+  } else {
+    isi = DB.pelanggan.length ? `
+      <div class="section-title"><span class="bar"></span>Riwayat Transaksi Pelanggan</div>
+      <div class="card pad" style="max-width:900px">
+        <div class="form-grid">
+          <div><label>Pilih pelanggan</label><select id="rtPilih">${DB.pelanggan.map(p => `<option value="${p.id_pelanggan}">${esc(p.nama_pelanggan)} · ${esc(p.no_hp)}</option>`).join('')}</select></div>
+        </div>
+      </div>
+      <div id="riwayatArea" class="spacer"></div>` : '<div class="empty">Belum ada pelanggan.</div>';
+  }
+
+  return `
+  <div class="hero">
+    <div class="hero-emoji">👥</div>
+    <div><div class="hero-title">Data Pelanggan</div>
+    <div class="hero-desc">Kelola identitas pelanggan dan menelusuri riwayat transaksinya.</div></div>
+  </div>
+  <div class="tabs">${tabs.map((t,i) => `<button class="tab ${TAB.pelanggan===i?'active':''}" onclick="setTab('pelanggan',${i})">${t}</button>`).join('')}</div>
+  ${isi}`;
+}
+
+/* ------------------------------------------------- KATEGORI & LAYANAN */
+function renderKategori(){
+  const tabs = ['🗂️ Kategori Cucian','🏷️ Layanan & Harga'];
+  let isi = '';
+
+  if(TAB.kategori === 0){
+    const kat = DB.kategori.map(k => ({
+      k, jml: DB.layanan.filter(l => l.id_kategori === k.id_kategori).length
+    }));
+    isi = `
+      <div class="section-title"><span class="bar"></span>Kategori Cucian</div>
+      ${kat.length ? `<div class="table-wrap"><table>
+        <thead><tr><th>ID</th><th>Nama Kategori</th><th>Keterangan</th><th class="num">Jumlah Layanan</th><th></th></tr></thead>
+        <tbody>${kat.map(x => `<tr>
+          <td class="num muted">${x.k.id_kategori}</td>
+          <td><b>${esc(x.k.nama_kategori)}</b></td>
+          <td class="muted small">${esc(x.k.keterangan||'-')}</td>
+          <td class="num">${x.jml}</td>
+          <td class="num"><button class="btn btn-ghost btn-sm" onclick="bukaModalEditKategori(${x.k.id_kategori})">✏️ Ubah</button></td>
+        </tr>`).join('')}</tbody></table></div>` : '<div class="empty">Belum ada kategori.</div>'}
+
+      <div class="card pad" style="max-width:720px;margin-top:1.2rem">
+        <h3>➕ Tambah Kategori</h3>
+        <div class="form-grid">
+          <div class="row2">
+            <div><label>Nama Kategori <span class="req">*</span></label><input id="tkNama" placeholder="Contoh: Pakaian"></div>
+            <div><label>Keterangan (opsional)</label><input id="tkKet" placeholder="Contoh: Cucian pakaian harian"></div>
+          </div>
+          <div class="btn-row"><button class="btn btn-primary" onclick="simpanKategoriBaru()">💾 Simpan Kategori</button></div>
+        </div>
+      </div>
+
+      <div class="card pad" style="max-width:720px;margin-top:1rem">
+        <h3>🗑️ Hapus Kategori</h3>
+        <div class="alert alert-warn">⚠️ Kategori yang masih memiliki layanan <b>tidak bisa dihapus</b> (ON DELETE RESTRICT).</div>
+        <div class="form-grid">
+          <div><label>Pilih kategori</label><select id="hkPilih">${DB.kategori.map(k => `<option value="${k.id_kategori}">${esc(k.nama_kategori)}</option>`).join('')}</select></div>
+          <label class="check"><input type="checkbox" id="hkYakin"> Ya, saya yakin ingin menghapus kategori ini</label>
+          <div class="btn-row"><button class="btn btn-danger" onclick="hapusKategoriAksi()">🗑️ Hapus Kategori</button></div>
+        </div>
+      </div>`;
+  } else {
+    const katOpts = DB.kategori.map(k => `<option value="${k.id_kategori}">${esc(k.nama_kategori)}</option>`).join('');
+    isi = `
+      <div class="section-title"><span class="bar"></span>Daftar Layanan &amp; Harga</div>
+      ${DB.layanan.length ? `<div class="table-wrap"><table>
+        <thead><tr><th>ID</th><th>Kode</th><th>Nama Layanan</th><th>Kategori</th><th>Satuan</th><th class="num">Harga Satuan</th><th>Status</th><th></th></tr></thead>
+        <tbody>${DB.layanan.map(l => `<tr>
+          <td class="num muted">${l.id_layanan}</td>
+          <td class="muted small"><b>${esc(l.kode_layanan)}</b></td>
+          <td><b>${esc(l.nama_layanan)}</b></td>
+          <td>${esc(Q.kategoriById(l.id_kategori)?.nama_kategori || '-')}</td>
+          <td class="muted">${esc(l.satuan)}</td>
+          <td class="num"><b>${rp(l.tarif_per_kg)}</b></td>
+          <td>${l.aktif ? '<span class="badge badge-ok">🟢 Aktif</span>' : '<span class="badge badge-off">⚪ Nonaktif</span>'}</td>
+          <td class="num"><button class="btn btn-ghost btn-sm" onclick="bukaModalEditLayanan(${l.id_layanan})">✏️ Ubah</button></td>
+        </tr>`).join('')}</tbody></table></div>` : '<div class="empty">Belum ada layanan.</div>'}
+      <div class="alert alert-info" style="margin-top:.8rem">💡 Perubahan harga hanya berlaku untuk nota baru. Nota lama memakai harga saat nota dibuat.</div>
+
+      <div class="card pad" style="max-width:860px;margin-top:1rem">
+        <h3>➕ Tambah Layanan</h3>
+        ${DB.kategori.length ? `<div class="form-grid">
+          <div class="row3">
+            <div><label>Kode Layanan <span class="req">*</span></label><input id="tlKode" placeholder="LYN13-PAK"></div>
+            <div><label>Nama Layanan <span class="req">*</span></label><input id="tlNama" placeholder="Cuci Sepatu Reguler"></div>
+            <div><label>Satuan <span class="req">*</span></label><input id="tlSatuan" value="kg"></div>
+          </div>
+          <div class="row2">
+            <div><label>Kategori <span class="req">*</span></label><select id="tlKategori">${katOpts}</select></div>
+            <div><label>Harga Satuan (Rp) <span class="req">*</span></label><input id="tlTarif" type="number" min="0" step="500" value="7000"></div>
+          </div>
+          <div class="btn-row"><button class="btn btn-primary" onclick="simpanLayananBaru()">💾 Simpan Layanan</button></div>
+        </div>` : '<div class="empty">Tambahkan kategori terlebih dahulu.</div>'}
+      </div>
+
+      <div class="card pad" style="max-width:860px;margin-top:1rem">
+        <h3>🗑️ Hapus / Nonaktifkan Layanan</h3>
+        <div class="alert alert-warn">⚠️ Layanan yang sudah dipakai nota lama <b>tidak bisa dihapus</b>. Gunakan status <b>Nonaktif</b> untuk menghentikan layanan tanpa merusak riwayat.</div>
+        ${DB.layanan.length ? `<div class="form-grid">
+          <div><label>Pilih layanan</label><select id="hlPilih">${DB.layanan.map(l => `<option value="${l.id_layanan}">${esc(l.kode_layanan)} · ${esc(l.nama_layanan)} (${esc(Q.kategoriById(l.id_kategori)?.nama_kategori||'-')})</option>`).join('')}</select></div>
+          <div class="row2">
+            <div><label>Status layanan</label><select id="hlStatus"><option value="1">🟢 Aktif</option><option value="0">⚪ Nonaktif</option></select></div>
+            <div class="hint" style="align-self:end">Layanan nonaktif tidak muncul pada pilihan transaksi baru, tetapi tetap tampil pada nota lama.</div>
+          </div>
+          <label class="check"><input type="checkbox" id="hlYakin"> Ya, saya yakin ingin menghapus layanan ini</label>
+          <div class="btn-row">
+            <button class="btn btn-ghost" onclick="simpanStatusLayanan()">💾 Simpan Status</button>
+            <button class="btn btn-danger" onclick="hapusLayananAksi()">🗑️ Hapus Layanan</button>
+          </div>
+        </div>` : '<div class="empty">Belum ada layanan.</div>'}
+      </div>`;
+  }
+
+  return `
+  <div class="hero">
+    <div class="hero-emoji">🧺</div>
+    <div><div class="hero-title">Kategori &amp; Layanan</div>
+    <div class="hero-desc">Master data jenis cucian beserta harga satuan per kilogram.</div></div>
+  </div>
+  <div class="tabs">${tabs.map((t,i) => `<button class="tab ${TAB.kategori===i?'active':''}" onclick="setTab('kategori',${i})">${t}</button>`).join('')}</div>
+  ${isi}`;
+}
+
+/* --------------------------------------------------------------- KASIR */
+function renderKasir(){
+  const tabs = ['🛒 Nota Baru','🧾 Riwayat Transaksi'];
+  let isi = '';
+
+  if(TAB.kasir === 0){
+    if(!DB.pelanggan.length){ isi = '<div class="alert alert-warn">⚠️ Belum ada pelanggan. Daftarkan pelanggan dulu di menu <b>Data Pelanggan</b>.</div>'; }
+    else if(!DB.kategori.length){ isi = '<div class="alert alert-warn">⚠️ Belum ada kategori. Tambahkan kategori dulu di menu <b>Kategori &amp; Layanan</b>.</div>'; }
+    else if(!Q.layananAktif().length){ isi = '<div class="alert alert-warn">⚠️ Belum ada layanan aktif. Tambahkan layanan dulu di menu <b>Kategori &amp; Layanan</b>.</div>'; }
+    else {
+      const total = CART.reduce((s,i) => s + i.berat*i.tarif, 0);
+      const berat = CART.reduce((s,i) => s + i.berat, 0);
+      const katAktif = DB.kategori.filter(k => DB.layanan.some(l => l.id_kategori === k.id_kategori && l.aktif === 1));
+      isi = `
+        <div class="section-title"><span class="bar"></span>1️⃣ Data Nota</div>
+        <div class="card pad" style="margin-bottom:1.1rem">
+          <div class="row3">
+            <div><label>Pelanggan <span class="req">*</span></label>
+              <select id="kPelanggan">${DB.pelanggan.map(p => `<option value="${p.id_pelanggan}">${esc(p.nama_pelanggan)} · ${esc(p.no_hp)}</option>`).join('')}</select></div>
+            <div><label>Tanggal <span class="req">*</span></label><input id="kTanggal" type="date" value="${today()}"></div>
+            <div><label>Kode Nota <span class="req">*</span></label><input id="kKode" value="${Q.kodeNotaBerikutnya()}"></div>
+          </div>
+        </div>
+
+        <div class="section-title"><span class="bar"></span>2️⃣ Tambah Cucian ke Keranjang</div>
+        <div class="card pad" style="margin-bottom:1.1rem">
+          <div class="row3">
+            <div><label>Kategori Cucian <span class="req">*</span></label>
+              <select id="kKategori">${katAktif.map(k => `<option value="${k.id_kategori}">${esc(k.nama_kategori)}</option>`).join('')}</select></div>
+            <div><label>Layanan <span class="req">*</span></label><select id="kLayanan"></select></div>
+            <div><label>Berat (kg) <span class="req">*</span></label>
+              <div style="display:flex;gap:.5rem;align-items:center">
+                <input id="kBerat" type="number" min="0" step="0.5" value="1">
+                <button class="btn btn-primary" onclick="tambahKeKeranjang()">➕ Tambah</button>
+              </div>
+            </div>
+          </div>
+          <div class="hint">💡 Layanan yang sama digabung beratnya otomatis. Harga diambil dari tarif saat ini.</div>
+        </div>
+
+        <div class="section-title"><span class="bar"></span>3️⃣ Keranjang Nota</div>
+        ${CART.length ? `
+          <div class="table-wrap" style="margin-bottom:1rem"><table>
+            <thead><tr><th>Kategori</th><th>Layanan</th><th class="num">Berat</th><th class="num">Harga/kg</th><th class="num">Subtotal</th><th></th></tr></thead>
+            <tbody>${CART.map((i,idx) => `<tr>
+              <td class="muted small">${esc(i.kategori)}</td>
+              <td><b>${esc(i.nama_layanan)}</b></td>
+              <td class="num"><div class="cart-qty">
+                <button class="qty-btn" onclick="ubahQty(${idx},-0.5)">−</button>
+                <span class="qty-val">${fmtBerat(i.berat)} kg</span>
+                <button class="qty-btn" onclick="ubahQty(${idx},0.5)">+</button>
+              </div></td>
+              <td class="num">${rp(i.tarif)}</td>
+              <td class="num"><b>${rp(i.berat*i.tarif)}</b></td>
+              <td class="num"><button class="btn btn-danger btn-sm" onclick="hapusItem(${idx})">🗑️</button></td>
+            </tr>`).join('')}</tbody></table></div>
+
+          <div class="metrics three" style="margin-bottom:1rem">
+            <div class="metric"><div class="metric-label">⚖️ Total Berat</div><div class="metric-value">${fmtBerat(berat)} kg</div></div>
+            <div class="metric"><div class="metric-label">🧺 Jumlah Item</div><div class="metric-value">${CART.length}</div></div>
+            <div class="metric" style="background:transparent;border:0;box-shadow:none">
+              <div class="total-box"><div><div class="tl">Total Tagihan</div><div class="ts">Berat × tarif saat nota dibuat</div></div>
+              <div class="tv">${rp(total)}</div></div>
+            </div>
+          </div>
+
+          <div class="btn-row" style="margin-bottom:1.2rem">
+            <button class="btn btn-ghost" onclick="kosongkanKeranjang()">🗑️ Kosongkan Keranjang</button>
+            <button class="btn btn-primary btn-block" style="max-width:320px;margin-left:auto" onclick="simpanNota()">💾 SIMPAN NOTA</button>
+          </div>` :
+          '<div class="empty">🛒 Keranjang masih kosong. Tambahkan jenis cucian terlebih dahulu.</div>'}
+      `;
+    }
+  } else {
+    const q = (document.getElementById('qNota')?.value || '').trim().toLowerCase();
+    const nota = [...DB.transaksi].filter(t => {
+      const pel = Q.pelangganById(t.id_pelanggan);
+      return !q || t.kode_nota.toLowerCase().includes(q) || (pel && pel.nama_pelanggan.toLowerCase().includes(q));
+    }).sort((a,b) => b.tanggal.localeCompare(a.tanggal) || b.id_transaksi - a.id_transaksi);
+    isi = `
+      <div class="form-grid" style="max-width:420px;margin-bottom:1rem">
+        <div><label>🔍 Cari nota (kode atau nama pelanggan)</label><input id="qNota" placeholder="Ketik kode nota / nama ..." value="${esc(q)}"></div>
+      </div>
+      <div class="section-title"><span class="bar"></span>Riwayat Semua Nota (${nota.length})</div>
+      ${nota.length ? `<div class="table-wrap" style="margin-bottom:1.1rem"><table>
+        <thead><tr><th>ID</th><th>Kode Nota</th><th>Tanggal</th><th>Pelanggan</th><th class="num">Item</th><th class="num">Total Berat</th><th class="num">Total</th><th></th></tr></thead>
+        <tbody>${nota.map(t => `<tr>
+          <td class="num muted">${t.id_transaksi}</td>
+          <td><b>${esc(t.kode_nota)}</b></td>
+          <td class="muted small">${tglIndo(t.tanggal)}</td>
+          <td>${esc(Q.pelangganById(t.id_pelanggan)?.nama_pelanggan || '-')}</td>
+          <td class="num">${Q.detailNota(t.id_transaksi).length}</td>
+          <td class="num">${fmtBerat(Q.detailNota(t.id_transaksi).reduce((s,d)=>s+d.berat,0))} kg</td>
+          <td class="num"><b>${rp(Q.totalNota(t.id_transaksi))}</b></td>
+          <td class="num"><button class="btn btn-ghost btn-sm" onclick="bukaModalNota('${esc(t.kode_nota)}')">🧾 Lihat</button></td>
+        </tr>`).join('')}</tbody></table></div>` : '<div class="empty">Belum ada transaksi yang cocok.</div>'}
+      <div id="areaNota"></div>`;
+  }
+
+  return `
+  <div class="hero">
+    <div class="hero-emoji">🛒</div>
+    <div><div class="hero-title">Kasir — Transaksi Baru</div>
+    <div class="hero-desc">Pilih pelanggan, pilih layanan, tentukan berat, lalu simpan nota.</div></div>
+  </div>
+  <div class="tabs">${tabs.map((t,i) => `<button class="tab ${TAB.kasir===i?'active':''}" onclick="setTab('kasir',${i})">${t}</button>`).join('')}</div>
+  ${isi}`;
+}
+
+/* =====================================================================
+   AKSI / EVENT
+   ===================================================================== */
+function bindAfterRender(){
+  /* navigasi */
+  document.querySelectorAll('.nav-item').forEach(b => b.onclick = () => { HALAMAN = b.dataset.page; render(); window.scrollTo({top:0}); });
+  /* pencarian langsung */
+  const qp = document.getElementById('qPel');
+  if(qp) qp.oninput = () => { const pos = qp.selectionStart; render(); const el = document.getElementById('qPel'); if(el){ el.focus(); el.setSelectionRange(pos,pos); } };
+  const qn = document.getElementById('qNota');
+  if(qn) qn.oninput = () => { const pos = qn.selectionStart; render(); const el = document.getElementById('qNota'); if(el){ el.focus(); el.setSelectionRange(pos,pos); } };
+  /* isi otomatis field ubah */
+  const up = document.getElementById('upPilih');
+  if(up){ up.onchange = () => isiFormUbah(up.value); isiFormUbah(up.value); }
+  const hp = document.getElementById('hpPilih');
+  if(hp){ hp.onchange = () => isiInfoHapus(hp.value); isiInfoHapus(hp.value); }
+  const rt = document.getElementById('rtPilih');
+  if(rt){ rt.onchange = () => renderRiwayat(rt.value); renderRiwayat(rt.value); }
+  /* layanan mengikuti kategori */
+  const kk = document.getElementById('kKategori');
+  if(kk){ kk.onchange = () => isiLayanan(); isiLayanan(); }
+}
+function setTab(k, i){ TAB[k] = i; render(); }
+function goto(page){ HALAMAN = page; render(); window.scrollTo({top:0}); }
+
+function isiFormUbah(id){
+  const p = Q.pelangganById(Number(id));
+  if(!p) return;
+  document.getElementById('upNama').value = p.nama_pelanggan;
+  document.getElementById('upHp').value = p.no_hp;
+  document.getElementById('upAlamat').value = p.alamat;
+}
+function isiInfoHapus(id){
+  const p = Q.pelangganById(Number(id));
+  const el = document.getElementById('hpInfo');
+  if(p && el) el.textContent = `${p.nama_pelanggan} — ${p.no_hp} — ${p.alamat}`;
+}
+function renderRiwayat(id){
+  const p = Q.pelangganById(Number(id));
+  const trx = Q.riwayatPelanggan(Number(id));
+  const area = document.getElementById('riwayatArea');
+  if(!area) return;
+  if(!trx.length){ area.innerHTML = '<div class="empty">Pelanggan ini belum memiliki transaksi.</div>'; return; }
+  const tot = trx.reduce((s,t) => s + Q.totalNota(t.id_transaksi), 0);
+  const berat = trx.reduce((s,t) => s + Q.detailNota(t.id_transaksi).reduce((a,d) => a+d.berat,0), 0);
+  area.innerHTML = `
+    <div class="metrics three">
+      <div class="metric"><div class="metric-label">🧾 Jumlah Nota</div><div class="metric-value">${trx.length}</div></div>
+      <div class="metric"><div class="metric-label">⚖️ Total Berat</div><div class="metric-value">${fmtBerat(berat)} kg</div></div>
+      <div class="metric"><div class="metric-label">💰 Total Belanja</div><div class="metric-value">${rp(tot)}</div></div>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Kode Nota</th><th>Tanggal</th><th class="num">Item</th><th class="num">Total Berat</th><th class="num">Total</th><th></th></tr></thead>
+      <tbody>${trx.map(t => `<tr>
+        <td><b>${esc(t.kode_nota)}</b></td>
+        <td class="muted small">${tglIndo(t.tanggal)}</td>
+        <td class="num">${Q.detailNota(t.id_transaksi).length}</td>
+        <td class="num">${fmtBerat(Q.detailNota(t.id_transaksi).reduce((a,d)=>a+d.berat,0))} kg</td>
+        <td class="num"><b>${rp(Q.totalNota(t.id_transaksi))}</b></td>
+        <td class="num"><button class="btn btn-ghost btn-sm" onclick="bukaModalNota('${esc(t.kode_nota)}')">🧾 Lihat</button></td>
+      </tr>`).join('')}</tbody></table></div>`;
+}
+function isiLayanan(){
+  const idKat = Number(document.getElementById('kKategori').value);
+  const lay = Q.layananAktif().filter(l => l.id_kategori === idKat);
+  const sel = document.getElementById('kLayanan');
+  sel.innerHTML = lay.map(l => `<option value="${l.id_layanan}">${esc(l.nama_layanan)} — ${rp(l.tarif_per_kg)}/${esc(l.satuan)}</option>`).join('');
+}
+
+/* ------------------------------------------------------------- pelanggan */
+function simpanPelangganBaru(){
+  const r = tambahPelanggan(document.getElementById('npNama').value, document.getElementById('npHp').value, document.getElementById('npAlamat').value);
+  if(!r.ok){ toast('❌ '+r.pesan,'error'); return; }
+  toast('✅ '+r.pesan); TAB.pelanggan = 0; render();
+}
+function simpanPelangganUbah(){
+  const id = Number(document.getElementById('upPilih').value);
+  const r = ubahPelanggan(id, document.getElementById('upNama').value, document.getElementById('upHp').value, document.getElementById('upAlamat').value);
+  if(!r.ok){ toast('❌ '+r.pesan,'error'); return; }
+  toast('✅ '+r.pesan); render();
+}
+function hapusPelangganAksi(){
+  if(!document.getElementById('hpYakin').checked){ toast('❌ Centang kotak konfirmasi terlebih dahulu.','error'); return; }
+  const id = Number(document.getElementById('hpPilih').value);
+  const r = hapusPelanggan(id);
+  if(!r.ok){ toast('❌ '+r.pesan,'error'); return; }
+  toast('✅ '+r.pesan); render();
+}
+
+/* -------------------------------------------------------------- kategori */
+function simpanKategoriBaru(){
+  const r = tambahKategori(document.getElementById('tkNama').value, document.getElementById('tkKet').value);
+  if(!r.ok){ toast('❌ '+r.pesan,'error'); return; }
+  toast('✅ '+r.pesan); render();
+}
+function hapusKategoriAksi(){
+  if(!document.getElementById('hkYakin').checked){ toast('❌ Centang kotak konfirmasi terlebih dahulu.','error'); return; }
+  const r = hapusKategori(Number(document.getElementById('hkPilih').value));
+  if(!r.ok){ toast('❌ '+r.pesan,'error'); return; }
+  toast('✅ '+r.pesan); render();
+}
+function bukaModalEditKategori(id){
+  const k = Q.kategoriById(id);
+  if(!k) return;
+  bukaModal('✏️ Ubah Kategori', `
+    <div class="form-grid">
+      <div><label>Nama Kategori <span class="req">*</span></label><input id="emkNama" value="${esc(k.nama_kategori)}"></div>
+      <div><label>Keterangan</label><input id="emkKet" value="${esc(k.keterangan||'')}"></div>
+    </div>`,
+    `<button class="btn btn-ghost" onclick="tutupModal()">Batal</button>
+     <button class="btn btn-primary" onclick="simpanKategoriUbah(${id})">💾 Simpan Perubahan</button>`);
+}
+function simpanKategoriUbah(id){
+  const r = ubahKategori(id, document.getElementById('emkNama').value, document.getElementById('emkKet').value);
+  if(!r.ok){ toast('❌ '+r.pesan,'error'); return; }
+  tutupModal(); toast('✅ '+r.pesan); render();
+}
+
+/* -------------------------------------------------------------- layanan */
+function simpanLayananBaru(){
+  const r = tambahLayanan(
+    document.getElementById('tlKode').value, document.getElementById('tlNama').value,
+    document.getElementById('tlSatuan').value, Number(document.getElementById('tlTarif').value),
+    Number(document.getElementById('tlKategori').value));
+  if(!r.ok){ toast('❌ '+r.pesan,'error'); return; }
+  toast('✅ '+r.pesan); render();
+}
+function bukaModalEditLayanan(id){
+  const l = Q.layananById(id);
+  if(!l) return;
+  bukaModal('✏️ Ubah Layanan', `
+    <div class="form-grid">
+      <div class="row3">
+        <div><label>Kode Layanan <span class="req">*</span></label><input id="emlKode" value="${esc(l.kode_layanan)}"></div>
+        <div><label>Nama Layanan <span class="req">*</span></label><input id="emlNama" value="${esc(l.nama_layanan)}"></div>
+        <div><label>Satuan <span class="req">*</span></label><input id="emlSatuan" value="${esc(l.satuan)}"></div>
+      </div>
+      <div class="row2">
+        <div><label>Kategori <span class="req">*</span></label><select id="emlKategori">${DB.kategori.map(k => `<option value="${k.id_kategori}" ${k.id_kategori===l.id_kategori?'selected':''}>${esc(k.nama_kategori)}</option>`).join('')}</select></div>
+        <div><label>Harga Satuan (Rp) <span class="req">*</span></label><input id="emlTarif" type="number" min="0" step="500" value="${l.tarif_per_kg}"></div>
+      </div>
+      <div class="alert alert-info">💡 Perubahan harga hanya berlaku untuk nota baru. Nota lama memakai harga saat nota dibuat.</div>
+    </div>`,
+    `<button class="btn btn-ghost" onclick="tutupModal()">Batal</button>
+     <button class="btn btn-primary" onclick="simpanLayananUbah(${id})">💾 Simpan Perubahan</button>`);
+}
+function simpanLayananUbah(id){
+  const r = ubahLayanan(id, document.getElementById('emlKode').value, document.getElementById('emlNama').value,
+    document.getElementById('emlSatuan').value, Number(document.getElementById('emlTarif').value),
+    Number(document.getElementById('emlKategori').value));
+  if(!r.ok){ toast('❌ '+r.pesan,'error'); return; }
+  tutupModal(); toast('✅ '+r.pesan); render();
+}
+function simpanStatusLayanan(){
+  const id = Number(document.getElementById('hlPilih').value);
+  const r = setAktifLayanan(id, document.getElementById('hlStatus').value === '1');
+  if(!r.ok){ toast('❌ '+r.pesan,'error'); return; }
+  toast('✅ '+r.pesan); render();
+}
+function hapusLayananAksi(){
+  if(!document.getElementById('hlYakin').checked){ toast('❌ Centang kotak konfirmasi terlebih dahulu.','error'); return; }
+  const r = hapusLayanan(Number(document.getElementById('hlPilih').value));
+  if(!r.ok){ toast('❌ '+r.pesan,'error'); return; }
+  toast('✅ '+r.pesan); render();
+}
+
+/* ---------------------------------------------------------------- kasir */
+function tambahKeKeranjang(){
+  const idLay = Number(document.getElementById('kLayanan').value);
+  const berat = Number(document.getElementById('kBerat').value);
+  if(!idLay){ toast('❌ Pilih layanan terlebih dahulu.','error'); return; }
+  if(!(berat > 0)){ toast('❌ Berat harus lebih dari 0 kg.','error'); return; }
+  const l = Q.layananById(idLay);
+  const kat = Q.kategoriById(l.id_kategori);
+  const ada = CART.find(i => i.id_layanan === idLay);
+  if(ada){ ada.berat += berat; toast(`ℹ️ Berat <b>${esc(l.nama_layanan)}</b> digabung menjadi ${fmtBerat(ada.berat)} kg.`,'info'); }
+  else { CART.push({id_layanan:idLay, nama_layanan:l.nama_layanan, kategori:kat?.nama_kategori||'-', satuan:l.satuan, tarif:l.tarif_per_kg, berat}); toast(`✅ <b>${esc(l.nama_layanan)}</b> (${fmtBerat(berat)} kg) ditambahkan ke keranjang.`); }
+  render();
+}
+function ubahQty(idx, delta){
+  const i = CART[idx];
+  i.berat = Math.round((i.berat + delta) * 100) / 100;
+  if(i.berat <= 0){ CART.splice(idx,1); toast('🗑️ Item dihapus dari keranjang.','info'); }
+  render();
+}
+function hapusItem(idx){ CART.splice(idx,1); toast('🗑️ Item dihapus dari keranjang.','info'); render(); }
+function kosongkanKeranjang(){ if(!CART.length) return; CART = []; toast('🗑️ Keranjang dikosongkan.','info'); render(); }
+function simpanNota(){
+  const kode = document.getElementById('kKode').value;
+  const tgl = document.getElementById('kTanggal').value || today();
+  const idPel = Number(document.getElementById('kPelanggan').value);
+  const r = simpanTransaksi(kode, tgl, idPel, CART);
+  if(!r.ok){ toast('❌ '+r.pesan,'error'); return; }
+  CART = [];
+  toast('✅ '+r.pesan);
+  HIST.push(r.id);
+  render();
+  setTimeout(() => bukaModalNota(r.id), 350);
+}
+
+/* ----------------------------------------------------------------- nota */
+function htmlNota(kode){
+  const t = DB.transaksi.find(x => x.kode_nota === kode);
+  if(!t) return '<div class="empty">Nota tidak ditemukan.</div>';
+  const p = Q.pelangganById(t.id_pelanggan);
+  const det = Q.detailNota(t.id_transaksi);
+  const total = det.reduce((s,d) => s + d.berat*d.harga_satuan, 0);
+  const berat = det.reduce((s,d) => s + d.berat, 0);
+  return `<div class="nota">
+    <div class="nota-head">
+      <div>
+        <div class="nota-kode">🧾 NOTA ${esc(t.kode_nota)}</div>
+        <div class="nota-meta">
+          Tanggal &nbsp;: ${tglIndo(t.tanggal)}<br>
+          Pelanggan : ${esc(p?.nama_pelanggan||'-')} (${esc(p?.no_hp||'-')})<br>
+          Alamat &nbsp;&nbsp;&nbsp;: ${esc(p?.alamat||'-')}
+        </div>
+      </div>
+      <div>
+        <div class="nota-total">${rp(total)}</div>
+        <div class="nota-meta" style="text-align:right">${fmtBerat(berat)} kg · ${det.length} item</div>
+      </div>
+    </div>
+    <div class="table-wrap" style="box-shadow:none;margin:.3rem 0">
+      <table><thead><tr><th>Kategori</th><th>Layanan</th><th class="num">Berat</th><th class="num">Harga/kg</th><th class="num">Subtotal</th></tr></thead>
+      <tbody>${det.map(d => {
+        const l = Q.layananById(d.id_layanan); const k = Q.kategoriById(l?.id_kategori);
+        return `<tr><td>${esc(k?.nama_kategori||'-')}</td><td>${esc(l?.nama_layanan||'-')}</td>
+          <td class="num">${fmtBerat(d.berat)} ${esc(l?.satuan||'kg')}</td>
+          <td class="num">${rp(d.harga_satuan)}</td><td class="num"><b>${rp(d.berat*d.harga_satuan)}</b></td></tr>`;
+      }).join('')}</tbody></table>
+    </div>
+    <div class="nota-kaki">ULTRA LAUNDRY · Sistem Administrasi Transaksi ·<br>Terima kasih sudah laundry di Ultra Laundry! 🧺</div>
+  </div>`;
+}
+function bukaModalNota(kode){
+  bukaModal('🧾 Rincian Nota', htmlNota(kode) +
+    `<div class="btn-row" style="margin-top:1rem">
+       <button class="btn btn-ghost" onclick="unduhNota('${esc(kode)}')">⬇️ Unduh Nota (TXT)</button>
+       <button class="btn btn-ghost" onclick="cetakNota('${esc(kode)}')">🖨️ Cetak Nota</button>
+     </div>`,
+    `<button class="btn btn-primary" onclick="tutupModal()">Tutup</button>`);
+}
+function bukaModalRiwayat(idPel){
+  const p = Q.pelangganById(idPel);
+  const trx = Q.riwayatPelanggan(idPel);
+  const isi = trx.length ? `<div class="table-wrap"><table>
+      <thead><tr><th>Kode Nota</th><th>Tanggal</th><th class="num">Item</th><th class="num">Total Berat</th><th class="num">Total</th><th></th></tr></thead>
+      <tbody>${trx.map(t => `<tr>
+        <td><b>${esc(t.kode_nota)}</b></td><td class="muted small">${tglIndo(t.tanggal)}</td>
+        <td class="num">${Q.detailNota(t.id_transaksi).length}</td>
+        <td class="num">${fmtBerat(Q.detailNota(t.id_transaksi).reduce((a,d)=>a+d.berat,0))} kg</td>
+        <td class="num"><b>${rp(Q.totalNota(t.id_transaksi))}</b></td>
+        <td class="num"><button class="btn btn-ghost btn-sm" onclick="tutupModal();bukaModalNota('${esc(t.kode_nota)}')">🧾 Lihat</button></td>
+      </tr>`).join('')}</tbody></table></div>` : '<div class="empty">Belum ada transaksi.</div>';
+  bukaModal(`🧾 Riwayat — ${esc(p.nama_pelanggan)}`, isi, `<button class="btn btn-primary" onclick="tutupModal()">Tutup</button>`);
+}
+
+/* ---------------------------------------------------------------- modal */
+function bukaModal(judul, isi, footer){
+  document.getElementById('modalTitle').innerHTML = judul;
+  document.getElementById('modalBody').innerHTML = isi;
+  document.getElementById('modalFoot').innerHTML = footer || '';
+  document.getElementById('modalBg').classList.add('open');
+}
+function tutupModal(){ document.getElementById('modalBg').classList.remove('open'); }
+document.addEventListener('click', e => { if(e.target.id === 'modalBg') tutupModal(); });
+document.addEventListener('keydown', e => { if(e.key === 'Escape') tutupModal(); });
+
+/* -------------------------------------------------------------- unduh */
+function unduhNota(kode){
+  const t = DB.transaksi.find(x => x.kode_nota === kode);
+  if(!t) return;
+  const p = Q.pelangganById(t.id_pelanggan);
+  const det = Q.detailNota(t.id_transaksi);
+  const total = det.reduce((s,d) => s + d.berat*d.harga_satuan, 0);
+  const garis = '='.repeat(58);
+  const isi = [garis,'ULTRA LAUNDRY','Sistem Administrasi Transaksi',garis,
+    `Kode Nota   : ${t.kode_nota}`, `Tanggal     : ${t.tanggal}`,
+    `Pelanggan   : ${p?.nama_pelanggan||'-'} (${p?.no_hp||'-'})`, `Alamat      : ${p?.alamat||'-'}`,
+    garis, `${'Kategori'.padEnd(12)}${'Layanan'.padEnd(22)}${'Berat'.padStart(8)}${'Subtotal'.padStart(14)}`, '-'.repeat(58)];
+  det.forEach(d => {
+    const l = Q.layananById(d.id_layanan); const k = Q.kategoriById(l?.id_kategori);
+    isi.push(`${(k?.nama_kategori||'-').padEnd(12)}${(l?.nama_layanan||'-').padEnd(22)}${(fmtBerat(d.berat)+' '+l?.satuan).padStart(8)}${rp(d.berat*d.harga_satuan).padStart(14)}`);
+  });
+  isi.push('-'.repeat(58), `${'TOTAL'.padEnd(42)}${rp(total).padStart(14)}`, garis, 'Terima kasih sudah laundry di Ultra Laundry!');
+  unduhFile(`nota_${kode}.txt`, isi.join('\n'), 'text/plain');
+}
+function cetakNota(kode){
+  const w = window.open('', '_blank', 'width=680,height=900');
+  if(!w){ toast('❌ Popup diblokir peramban. Izinkan pop-up untuk mencetak.','error'); return; }
+  const t = DB.transaksi.find(x => x.kode_nota === kode);
+  const p = Q.pelangganById(t.id_pelanggan);
+  const det = Q.detailNota(t.id_transaksi);
+  const total = det.reduce((s,d) => s + d.berat*d.harga_satuan, 0);
+  const rows = det.map(d => {
+    const l = Q.layananById(d.id_layanan); const k = Q.kategoriById(l?.id_kategori);
+    return `<tr><td>${esc(k?.nama_kategori||'')}</td><td>${esc(l?.nama_layanan||'')}</td><td class=r>${fmtBerat(d.berat)} ${esc(l?.satuan||'kg')}</td><td class=r>${rp(d.harga_satuan)}</td><td class=r>${rp(d.berat*d.harga_satuan)}</td></tr>`;
+  }).join('');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Nota ${esc(kode)}</title>
+  <style>
+    body{font-family:Segoe UI,sans-serif;padding:28px;color:#111}
+    h2{margin:0 0 4px;font-size:20px} .sub{color:#666;font-size:12px;margin-bottom:18px}
+    .head{display:flex;justify-content:space-between;border-bottom:2px dashed #bbb;padding-bottom:12px}
+    .total{font-size:20px;font-weight:800;text-align:right}
+    table{width:100%;border-collapse:collapse;margin-top:14px;font-size:13px}
+    th{text-align:left;color:#555;font-size:10px;text-transform:uppercase;border-bottom:1px solid #ddd;padding:6px 0}
+    td{padding:7px 0;border-bottom:1px solid #eee}.r{text-align:right}
+    .foot{margin-top:20px;border-top:2px dashed #bbb;padding-top:12px;text-align:center;font-size:11px;color:#666}
+    @media print{.noprint{display:none}}
+  </style></head><body>
+  <div class="head"><div><h2>🧺 ULTRA LAUNDRY</h2>
+    <div class="sub">Sistem Administrasi Transaksi</div>
+    <div style="font-size:12px;line-height:1.7">
+      <b>Nota :</b> ${esc(t.kode_nota)}<br>
+      <b>Tanggal :</b> ${tglIndo(t.tanggal)}<br>
+      <b>Pelanggan :</b> ${esc(p?.nama_pelanggan||'-')} (${esc(p?.no_hp||'-')})<br>
+      <b>Alamat :</b> ${esc(p?.alamat||'-')}
+    </div></div>
+    <div class="total">${rp(total)}</div></div>
+  <table><thead><tr><th>Kategori</th><th>Layanan</th><th class="r">Berat</th><th class="r">Harga/kg</th><th class="r">Subtotal</th></tr></thead>
+  <tbody>${rows}</tbody>
+  <tfoot><tr><td colspan="4" class="r" style="font-weight:800;padding-top:10px">TOTAL</td><td class="r" style="font-weight:800;padding-top:10px">${rp(total)}</td></tr></tfoot></table>
+  <div class="foot">Terima kasih sudah laundry di Ultra Laundry! 🧺</div>
+  <p class="noprint" style="text-align:center;margin-top:22px"><button onclick="window.print()" style="padding:9px 20px;border-radius:9px;border:0;background:#2563EB;color:#fff;font-weight:700;cursor:pointer">🖨️ Cetak / Simpan PDF</button></p>
+  <script>window.onload=()=>{setTimeout(()=>window.print(),300)}<\/script>
+  </body></html>`);
+  w.document.close();
+}
+function unduhFile(nama, isi, tipe){
+  const blob = new Blob([isi], {type: tipe || 'text/plain;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = nama;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+function eksporJSON(){
+  unduhFile('ultralaundry_data.json', JSON.stringify(DB, null, 2), 'application/json');
+  toast('⬇️ Data berhasil diunduh.','info');
+}
+
+/* ============================================================ START */
+render();
+</script>
+</body>
+</html>
