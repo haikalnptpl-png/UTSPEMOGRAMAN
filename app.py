@@ -13,19 +13,35 @@ Seluruh perhitungan total dilakukan secara dinamis dari tabel
 
 from __future__ import annotations
 
+import base64
 import sqlite3
 from datetime import date
+from pathlib import Path
 
 import pandas as pd
 import streamlit as st
+from PIL import Image
 
 import database
 
 # ---------------------------------------------------------------- konfigurasi
 
+LOGO_PATH = Path(__file__).resolve().parent / "assets" / "logo.png"
+LOGO_URI = (
+    "data:image/png;base64," + base64.b64encode(LOGO_PATH.read_bytes()).decode("ascii")
+    if LOGO_PATH.exists()
+    else ""
+)
+LOGO_IMG_HTML = (
+    f'<img src="{LOGO_URI}" alt="Ultra Laundry" '
+    'style="width:100%;height:100%;object-fit:contain;border-radius:14px;display:block;background:#fff" />'
+    if LOGO_URI
+    else "🧺"
+)
+
 st.set_page_config(
     page_title="Ultra Laundry",
-    page_icon="🧺",
+    page_icon=Image.open(LOGO_PATH) if LOGO_PATH.exists() else "🧺",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -285,9 +301,9 @@ def tampilkan_flash() -> None:
 def bangun_sidebar() -> str:
     with st.sidebar:
         st.markdown(
-            """
+            f"""
             <div class="brand">
-              <div class="brand-logo">🧺</div>
+              <div class="brand-logo">{LOGO_IMG_HTML}</div>
               <div class="brand-text">
                 <div class="brand-name">ULTRA LAUNDRY</div>
                 <div class="brand-sub">Administrasi Transaksi</div>
