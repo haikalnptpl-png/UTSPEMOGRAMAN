@@ -49,11 +49,11 @@ TIM = {
     "nama": "Team 1",
     "anggota": [
         ("Deyra Taftiar M. B", "4.52.24.3.06"),
-        ("Haikal Ronaldo Napitupulu", "4.52.24.3.10"),
+        ("Haikal Ronaldo Napitupulu", "4.52.24.3.11"),
         ("Latifa Nafiah Putri", "4.52.24.3.14"),
         ("Revalia Apria Sisviyanti", "4.52.24.3.23"),
     ],
-    "dosen": "",
+    "dosen": "Dwi Budi Santoso, S.Kom., M.Kom",
 }
 
 st.set_page_config(
@@ -287,62 +287,111 @@ html, body, [class*="css"] { font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-
     [data-testid="stColumn"] { margin-bottom: .35rem; }
 }
 
-/* ---------- Kartu keterangan tim ---------- */
-.tim-card {
-    position: relative; overflow: hidden;
-    background: linear-gradient(135deg, #FFFFFF 0%, #F3F8FF 100%);
-    border: 1px solid var(--ul-line); border-radius: 20px;
-    padding: 1.4rem 1.5rem; box-shadow: 0 10px 30px rgba(15,23,42,.07);
+/* ---------- Scrollbar khas aplikasi ---------- */
+* { scrollbar-width: thin; scrollbar-color: #2563EB rgba(37,99,235,.08); }
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-track { background: rgba(37,99,235,.06); border-radius: 8px; }
+*::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #2563EB, #06B6D4);
+    border-radius: 8px; border: 2px solid transparent; background-clip: padding-box;
 }
-.tim-card::before {
-    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+*::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #1D4ED8, #0891B2); background-clip: padding-box; }
+[data-testid="stSidebar"] *::-webkit-scrollbar-thumb { background: rgba(125,211,252,.4); background-clip: padding-box; }
+
+/* ---------- Polish modern: metric glass + hero shine ---------- */
+[data-testid="stMetric"] { position: relative; overflow: hidden; backdrop-filter: blur(6px); }
+[data-testid="stMetric"]::before {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px;
     background: linear-gradient(90deg, var(--ul-primary), var(--ul-accent));
+    opacity: .85;
 }
-.tim-head {
-    display: flex; justify-content: space-between; align-items: center;
-    gap: 1rem; flex-wrap: wrap; margin-bottom: 1.15rem;
+.hero { position: relative; overflow: hidden; }
+.hero::after {
+    content: ""; position: absolute; top: 0; bottom: 0; width: 45%;
+    left: -60%; transform: skewX(-18deg);
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.16), transparent);
+    animation: hero-shine 5.5s ease-in-out infinite;
+    pointer-events: none;
 }
-.tim-title { font-weight: 800; font-size: 1.12rem; color: var(--ul-ink); }
-.tim-sub { font-size: .82rem; color: var(--ul-muted); margin-top: .15rem; }
-.tim-badge {
-    background: linear-gradient(135deg, var(--ul-primary), var(--ul-accent));
-    color: #fff; font-weight: 800; font-size: .85rem; letter-spacing: .03em;
-    padding: .4rem .95rem; border-radius: 999px;
-    box-shadow: 0 6px 16px rgba(37,99,235,.32);
+@keyframes hero-shine { 0% { left: -60%; } 55% { left: 130%; } 100% { left: 130%; } }
+
+/* ---------- Panel tim (glass dark, modern) ---------- */
+.team {
+    position: relative; overflow: hidden; border-radius: 24px; margin-top: .4rem;
+    background: linear-gradient(135deg, #0B1B36 0%, #10254A 45%, #0E2A4D 100%);
+    border: 1px solid rgba(148,197,255,.16);
+    box-shadow: 0 24px 60px rgba(11,27,54,.35);
 }
-.tim-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: .8rem; }
-.tim-member {
-    display: flex; align-items: center; gap: .7rem;
-    background: #fff; border: 1px solid var(--ul-line);
-    border-radius: 14px; padding: .8rem .85rem;
-    transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+.team-aurora { position: absolute; border-radius: 50%; filter: blur(60px); opacity: .5; pointer-events: none; }
+.team-aurora.a1 { width: 340px; height: 340px; top: -120px; left: -80px;
+    background: radial-gradient(circle, rgba(37,99,235,.55), transparent 70%); }
+.team-aurora.a2 { width: 300px; height: 300px; bottom: -120px; right: -60px;
+    background: radial-gradient(circle, rgba(6,182,212,.5), transparent 70%); }
+.team-inner { position: relative; padding: 1.6rem 1.7rem 1.5rem; }
+.team-eyebrow {
+    display: inline-flex; align-items: center; gap: .45rem;
+    font-size: .72rem; font-weight: 700; letter-spacing: .16em;
+    text-transform: uppercase; color: #7DD3FC;
 }
-.tim-member:hover {
-    transform: translateY(-3px); border-color: #BFDBFE;
-    box-shadow: 0 10px 24px rgba(37,99,235,.14);
+.team-eyebrow .dot { width: 7px; height: 7px; border-radius: 50%; background: #22D3EE; box-shadow: 0 0 12px #22D3EE; }
+.team-titlerow { display: flex; align-items: center; gap: .7rem; margin-top: .5rem; flex-wrap: wrap; }
+.team-title {
+    margin: 0; font-size: 1.7rem; font-weight: 800; letter-spacing: -.02em;
+    background: linear-gradient(90deg, #fff, #BAE6FD);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
 }
-.tim-avatar {
-    width: 42px; height: 42px; flex: 0 0 42px; border-radius: 12px;
+.team-count {
+    font-size: .74rem; font-weight: 700; color: #BAE6FD;
+    background: rgba(125,211,252,.14); border: 1px solid rgba(125,211,252,.3);
+    padding: .22rem .6rem; border-radius: 999px;
+}
+.team-desc { margin: .4rem 0 0; color: #94A3B8; font-size: .86rem; }
+.team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: .9rem; margin-top: 1.3rem; }
+.member {
+    position: relative; overflow: hidden; border-radius: 18px; padding: 1.05rem 1.05rem 1rem;
+    background: rgba(255,255,255,.05); border: 1px solid rgba(148,197,255,.14);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+}
+.member::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--m1), var(--m2)); opacity: .9; }
+.member:hover {
+    transform: translateY(-4px); background: rgba(255,255,255,.09);
+    border-color: rgba(148,197,255,.32); box-shadow: 0 16px 36px rgba(0,0,0,.35);
+}
+.member-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.member-avatar {
+    width: 52px; height: 52px; border-radius: 16px;
     display: flex; align-items: center; justify-content: center;
-    font-weight: 800; font-size: .95rem; color: #fff;
-    background: linear-gradient(135deg, var(--ul-primary), var(--ul-accent));
-    box-shadow: 0 5px 14px rgba(37,99,235,.3);
+    font-weight: 800; font-size: 1.1rem; color: #fff;
+    background: linear-gradient(135deg, var(--m1), var(--m2));
+    border: 2px solid rgba(255,255,255,.25); box-shadow: 0 8px 20px rgba(0,0,0,.3);
 }
-.tim-info { min-width: 0; }
-.tim-nama { font-weight: 700; font-size: .88rem; color: var(--ul-ink); line-height: 1.25; }
-.tim-nim {
-    font-size: .76rem; color: var(--ul-muted); margin-top: .15rem;
-    font-variant-numeric: tabular-nums; letter-spacing: .02em;
+.member-index { font-size: .72rem; font-weight: 700; color: rgba(186,230,253,.5);
+    font-variant-numeric: tabular-nums; letter-spacing: .08em; }
+.member-name { margin-top: .8rem; font-weight: 700; font-size: .95rem; color: #F1F5F9; line-height: 1.3; }
+.member-nim {
+    margin-top: .35rem; display: inline-block; font-size: .76rem; font-weight: 600; color: #BAE6FD;
+    background: rgba(125,211,252,.12); border: 1px solid rgba(125,211,252,.22);
+    padding: .18rem .5rem; border-radius: 8px;
+    font-variant-numeric: tabular-nums; letter-spacing: .04em;
 }
-.tim-dosen {
-    margin-top: 1.15rem; padding-top: .95rem; border-top: 1px dashed var(--ul-line);
-    font-size: .92rem; color: var(--ul-ink);
+.team-dosen {
+    display: flex; align-items: center; gap: .85rem; margin-top: 1.35rem; padding: .95rem 1.1rem;
+    border-radius: 16px; border: 1px solid rgba(125,211,252,.22);
+    background: linear-gradient(90deg, rgba(37,99,235,.18), rgba(6,182,212,.14));
 }
-.tim-dosen-label { font-weight: 700; }
-.tim-dosen-nama { color: var(--ul-muted); }
+.dosen-badge {
+    width: 44px; height: 44px; flex: 0 0 44px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center; font-size: 1.3rem;
+    background: linear-gradient(135deg, #F59E0B, #FBBF24); box-shadow: 0 8px 20px rgba(245,158,11,.35);
+}
+.dosen-label { font-size: .7rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #7DD3FC; }
+.dosen-nama { font-size: 1rem; font-weight: 700; color: #fff; margin-top: .15rem; }
 @media (max-width: 640px) {
-    .tim-card { padding: 1.1rem 1.15rem; border-radius: 16px; }
-    .tim-title { font-size: 1.02rem; }
+    .team-inner { padding: 1.2rem 1.15rem; }
+    .team-title { font-size: 1.4rem; }
+    .team-dosen { flex-wrap: wrap; }
 }
 </style>
 """
@@ -369,35 +418,51 @@ def format_berat(nilai) -> str:
 
 
 def html_tim() -> str:
-    """Membangun kartu keterangan tim (Team 1) untuk halaman Beranda."""
+    """Membangun panel tim pengembang (glass dark) untuk halaman Beranda."""
+    warna = [
+        ("#06B6D4", "#22D3EE"),
+        ("#2563EB", "#60A5FA"),
+        ("#8B5CF6", "#D946EF"),
+        ("#F59E0B", "#FBBF24"),
+    ]
     anggota_html = ""
-    for nama, nim in TIM["anggota"]:
+    for i, (nama, nim) in enumerate(TIM["anggota"]):
         inisial = "".join(kata[0] for kata in nama.split()[:2]).upper()
+        m1, m2 = warna[i % len(warna)]
         anggota_html += f"""
-          <div class="tim-member">
-            <div class="tim-avatar">{inisial}</div>
-            <div class="tim-info">
-              <div class="tim-nama">{nama}</div>
-              <div class="tim-nim">NIM {nim}</div>
+          <article class="member" style="--m1:{m1};--m2:{m2}">
+            <div class="member-top">
+              <div class="member-avatar">{inisial}</div>
+              <span class="member-index">{i + 1:02d}</span>
             </div>
-          </div>"""
+            <div class="member-name">{nama}</div>
+            <div class="member-nim">{nim}</div>
+          </article>"""
     dosen = TIM["dosen"] or "—"
     return f"""
-    <div class="tim-card">
-      <div class="tim-head">
-        <div>
-          <div class="tim-title">👥 Keterangan Tim</div>
-          <div class="tim-sub">Pengembang Sistem Administrasi Transaksi Ultra Laundry</div>
+    <section class="team">
+      <div class="team-aurora a1"></div>
+      <div class="team-aurora a2"></div>
+      <div class="team-inner">
+        <header>
+          <div class="team-eyebrow"><span class="dot"></span> Tim Pengembang</div>
+          <div class="team-titlerow">
+            <h2 class="team-title">{TIM['nama']}</h2>
+            <span class="team-count">{len(TIM['anggota'])} anggota</span>
+          </div>
+          <p class="team-desc">Sistem Administrasi Transaksi Ultra Laundry — dirancang &amp; dibangun bersama.</p>
+        </header>
+        <div class="team-grid">{anggota_html}
         </div>
-        <div class="tim-badge">{TIM['nama']}</div>
+        <footer class="team-dosen">
+          <div class="dosen-badge">🎓</div>
+          <div>
+            <div class="dosen-label">Dosen Pengampu</div>
+            <div class="dosen-nama">{dosen}</div>
+          </div>
+        </footer>
       </div>
-      <div class="tim-grid">{anggota_html}
-      </div>
-      <div class="tim-dosen">
-        <span class="tim-dosen-label">Dosen Pengampu:</span>
-        <span class="tim-dosen-nama">{dosen}</span>
-      </div>
-    </div>"""
+    </section>"""
 
 
 def pesan_database(e: Exception) -> str:
