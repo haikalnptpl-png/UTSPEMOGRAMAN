@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import base64
 import sqlite3
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
 import pandas as pd
@@ -43,6 +43,18 @@ LOGO_HERO_HTML = (
     if LOGO_URI
     else '<div class="hero-emoji">🏠</div>'
 )
+
+# Identitas tim pengembang (ditampilkan pada halaman Beranda).
+TIM = {
+    "nama": "Team 1",
+    "anggota": [
+        ("Deyra Taftiar M. B", "4.52.24.3.06"),
+        ("Haikal Ronaldo Napitupulu", "4.52.24.3.10"),
+        ("Latifa Nafiah Putri", "4.52.24.3.14"),
+        ("Revalia Apria Sisviyanti", "4.52.24.3.23"),
+    ],
+    "dosen": "",
+}
 
 st.set_page_config(
     page_title="Ultra Laundry",
@@ -274,6 +286,64 @@ html, body, [class*="css"] { font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-
     .stTabs [data-baseweb="tab"] { padding: .45rem .65rem; font-size: .82rem; }
     [data-testid="stColumn"] { margin-bottom: .35rem; }
 }
+
+/* ---------- Kartu keterangan tim ---------- */
+.tim-card {
+    position: relative; overflow: hidden;
+    background: linear-gradient(135deg, #FFFFFF 0%, #F3F8FF 100%);
+    border: 1px solid var(--ul-line); border-radius: 20px;
+    padding: 1.4rem 1.5rem; box-shadow: 0 10px 30px rgba(15,23,42,.07);
+}
+.tim-card::before {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+    background: linear-gradient(90deg, var(--ul-primary), var(--ul-accent));
+}
+.tim-head {
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 1rem; flex-wrap: wrap; margin-bottom: 1.15rem;
+}
+.tim-title { font-weight: 800; font-size: 1.12rem; color: var(--ul-ink); }
+.tim-sub { font-size: .82rem; color: var(--ul-muted); margin-top: .15rem; }
+.tim-badge {
+    background: linear-gradient(135deg, var(--ul-primary), var(--ul-accent));
+    color: #fff; font-weight: 800; font-size: .85rem; letter-spacing: .03em;
+    padding: .4rem .95rem; border-radius: 999px;
+    box-shadow: 0 6px 16px rgba(37,99,235,.32);
+}
+.tim-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: .8rem; }
+.tim-member {
+    display: flex; align-items: center; gap: .7rem;
+    background: #fff; border: 1px solid var(--ul-line);
+    border-radius: 14px; padding: .8rem .85rem;
+    transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+.tim-member:hover {
+    transform: translateY(-3px); border-color: #BFDBFE;
+    box-shadow: 0 10px 24px rgba(37,99,235,.14);
+}
+.tim-avatar {
+    width: 42px; height: 42px; flex: 0 0 42px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: .95rem; color: #fff;
+    background: linear-gradient(135deg, var(--ul-primary), var(--ul-accent));
+    box-shadow: 0 5px 14px rgba(37,99,235,.3);
+}
+.tim-info { min-width: 0; }
+.tim-nama { font-weight: 700; font-size: .88rem; color: var(--ul-ink); line-height: 1.25; }
+.tim-nim {
+    font-size: .76rem; color: var(--ul-muted); margin-top: .15rem;
+    font-variant-numeric: tabular-nums; letter-spacing: .02em;
+}
+.tim-dosen {
+    margin-top: 1.15rem; padding-top: .95rem; border-top: 1px dashed var(--ul-line);
+    font-size: .92rem; color: var(--ul-ink);
+}
+.tim-dosen-label { font-weight: 700; }
+.tim-dosen-nama { color: var(--ul-muted); }
+@media (max-width: 640px) {
+    .tim-card { padding: 1.1rem 1.15rem; border-radius: 16px; }
+    .tim-title { font-size: 1.02rem; }
+}
 </style>
 """
 
@@ -296,6 +366,38 @@ def format_berat(nilai) -> str:
         return f"{float(nilai):g} kg"
     except (TypeError, ValueError):
         return "0 kg"
+
+
+def html_tim() -> str:
+    """Membangun kartu keterangan tim (Team 1) untuk halaman Beranda."""
+    anggota_html = ""
+    for nama, nim in TIM["anggota"]:
+        inisial = "".join(kata[0] for kata in nama.split()[:2]).upper()
+        anggota_html += f"""
+          <div class="tim-member">
+            <div class="tim-avatar">{inisial}</div>
+            <div class="tim-info">
+              <div class="tim-nama">{nama}</div>
+              <div class="tim-nim">NIM {nim}</div>
+            </div>
+          </div>"""
+    dosen = TIM["dosen"] or "—"
+    return f"""
+    <div class="tim-card">
+      <div class="tim-head">
+        <div>
+          <div class="tim-title">👥 Keterangan Tim</div>
+          <div class="tim-sub">Pengembang Sistem Administrasi Transaksi Ultra Laundry</div>
+        </div>
+        <div class="tim-badge">{TIM['nama']}</div>
+      </div>
+      <div class="tim-grid">{anggota_html}
+      </div>
+      <div class="tim-dosen">
+        <span class="tim-dosen-label">Dosen Pengampu:</span>
+        <span class="tim-dosen-nama">{dosen}</span>
+      </div>
+    </div>"""
 
 
 def pesan_database(e: Exception) -> str:
@@ -448,6 +550,78 @@ def halaman_beranda() -> None:
 
     st.markdown("")
     st.markdown(
+        '<div class="section-title"><span class="bar"></span>📅 Omzet per Rentang Waktu</div>',
+        unsafe_allow_html=True,
+    )
+    with st.container(border=True):
+        hari_ini = date.today()
+        awal_db, akhir_db = database.rentang_tanggal_transaksi()
+        if "omzet_range" not in st.session_state:
+            st.session_state.omzet_range = (hari_ini - timedelta(days=29), hari_ini)
+
+        pr1, pr2, pr3, pr4 = st.columns(4)
+        with pr1:
+            if st.button("7 Hari", width="stretch", key="omzet_7"):
+                st.session_state.omzet_range = (hari_ini - timedelta(days=6), hari_ini)
+        with pr2:
+            if st.button("30 Hari", width="stretch", key="omzet_30"):
+                st.session_state.omzet_range = (hari_ini - timedelta(days=29), hari_ini)
+        with pr3:
+            if st.button("Bulan Ini", width="stretch", key="omzet_bulan"):
+                st.session_state.omzet_range = (hari_ini.replace(day=1), hari_ini)
+        with pr4:
+            if st.button("Semua Data", width="stretch", key="omzet_semua"):
+                if awal_db and akhir_db:
+                    st.session_state.omzet_range = (
+                        date.fromisoformat(awal_db), date.fromisoformat(akhir_db)
+                    )
+
+        rentang = st.date_input(
+            "Pilih rentang tanggal", key="omzet_range", format="DD/MM/YYYY"
+        )
+        if isinstance(rentang, (tuple, list)):
+            mulai, sampai = rentang[0], rentang[-1]
+        else:
+            mulai = sampai = rentang
+        if mulai > sampai:
+            mulai, sampai = sampai, mulai
+
+        omzet = database.omzet_rentang(mulai.isoformat(), sampai.isoformat())
+        st.caption(
+            f"Menampilkan omzet **{mulai.strftime('%d %b %Y')}** – **{sampai.strftime('%d %b %Y')}**."
+        )
+        o1, o2, o3, o4 = st.columns(4)
+        with o1:
+            st.metric("💰 Omzet Rentang", rupiah(omzet["total_pendapatan"]), border=True)
+        with o2:
+            st.metric(
+                "🧾 Jumlah Nota",
+                f"{omzet['jumlah_transaksi']:,}".replace(",", "."),
+                border=True,
+            )
+        with o3:
+            st.metric("⚖️ Total Berat", f"{omzet['total_berat']:g} kg", border=True)
+        with o4:
+            st.metric("📊 Rata-rata / Nota", rupiah(omzet["rata_rata_nota"]), border=True)
+
+        harian_rentang = database.pendapatan_per_hari_rentang(
+            mulai.isoformat(), sampai.isoformat()
+        )
+        if harian_rentang:
+            df = pd.DataFrame(harian_rentang).rename(
+                columns={"tanggal": "Tanggal", "total": "Pendapatan (Rp)"}
+            )
+            st.line_chart(
+                df.set_index("Tanggal")["Pendapatan (Rp)"], height=220, color="#2563EB"
+            )
+        else:
+            st.info(
+                "Tidak ada transaksi pada rentang ini. Coba preset **Semua Data** "
+                "atau pilih rentang tanggal lain."
+            )
+
+    st.markdown("")
+    st.markdown(
         '<div class="section-title"><span class="bar"></span>📊 Pendapatan & Aktivitas</div>',
         unsafe_allow_html=True,
     )
@@ -547,6 +721,9 @@ def halaman_beranda() -> None:
                 )
             else:
                 st.info("Belum ada pelanggan yang bertransaksi.")
+
+    st.markdown("")
+    st.markdown(html_tim(), unsafe_allow_html=True)
 
 
 # ------------------------------------------------------- HALAMAN DATA PELANGGAN
@@ -892,7 +1069,10 @@ def halaman_kategori_layanan() -> None:
                     c1, c2, c3 = st.columns(3)
                     kode = c1.text_input("Kode Layanan *", placeholder="LYN13-PAK", key="tl_kode")
                     nama = c2.text_input("Nama Layanan *", placeholder="Cuci Sepatu Reguler", key="tl_nama")
-                    satuan = c3.text_input("Satuan *", value="kg", key="tl_satuan")
+                    satuan = c3.selectbox(
+                        "Satuan *", ["kg", "pcs"], index=0, key="tl_satuan",
+                        help="Pilih kg (per kilogram) atau pcs (per satuan, mis. boneka/selimut/sprei).",
+                    )
                     c4, c5 = st.columns([1, 2])
                     id_kat = c4.selectbox("Kategori *", list(peta_kat_tambah), format_func=lambda i: peta_kat_tambah[i], key="tl_kategori")
                     tarif = c5.number_input("Harga Satuan (Rp) *", min_value=0, step=500, value=7000, key="tl_tarif")
@@ -920,7 +1100,12 @@ def halaman_kategori_layanan() -> None:
                     c1, c2, c3 = st.columns(3)
                     kode = c1.text_input("Kode Layanan *", value=lama["kode_layanan"], key=f"ul_kode_{idx}")
                     nama = c2.text_input("Nama Layanan *", value=lama["nama_layanan"], key=f"ul_nama_{idx}")
-                    satuan = c3.text_input("Satuan *", value=lama["satuan"], key=f"ul_satuan_{idx}")
+                    satuan = c3.selectbox(
+                        "Satuan *", ["kg", "pcs"],
+                        index=1 if lama["satuan"] == "pcs" else 0,
+                        key=f"ul_satuan_{idx}",
+                        help="Pilih kg (per kilogram) atau pcs (per satuan, mis. boneka/selimut/sprei).",
+                    )
                     c4, c5 = st.columns([1, 2])
                     peta_kat_ubah_lay = {d["id_kategori"]: d["nama_kategori"] for d in kategori_tersedia}
                     id_kat = c4.selectbox(

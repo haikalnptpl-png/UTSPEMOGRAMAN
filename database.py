@@ -149,6 +149,7 @@ def isi_data_awal(conn: sqlite3.Connection) -> None:
         ("Karpet", "Cucian karpet lantai dan permadani ruangan"),
         ("Boneka", "Cucian boneka berbagai ukuran"),
         ("Selimut", "Cucian selimut tidur dan bedcover"),
+        ("Sprei", "Cucian sprei, bed sheet, dan sarung bantal/guling"),
     ]
     id_kategori: dict[str, int] = {}
     for nama, ket in kategori:
@@ -171,6 +172,9 @@ def isi_data_awal(conn: sqlite3.Connection) -> None:
         ("LYN10-SEL", "Cuci Selimut Reguler", "kg", 8000, "Selimut"),
         ("LYN11-SEL", "Cuci Selimut Express", "kg", 11000, "Selimut"),
         ("LYN12-SEL", "Cuci Selimut Kering", "kg", 7000, "Selimut"),
+        ("LYN13-SPR", "Cuci Sprei Reguler", "kg", 8000, "Sprei"),
+        ("LYN14-SPR", "Cuci Sprei Express", "kg", 11000, "Sprei"),
+        ("LYN15-SPR", "Cuci Sprei Kering", "kg", 6000, "Sprei"),
     ]
     id_layanan: dict[str, int] = {}
     for kode, nama, satuan, tarif, induk in layanan:
@@ -670,3 +674,53 @@ def pendapatan_per_hari(jumlah_hari: int = 14) -> list[dict]:
                 ORDER BY t.tanggal""",
             (f"-{jumlah_hari} days",),
         ))
+
+
+def omzet_rentang(mulai: str, sampai: str) -> dict:
+    """Ringkasan omzet untuk rentang tanggal tertentu (inklusif).
+
+    ``mulai`` dan ``sampai`` berupa string ISO 'YYYY-MM-DD'. Seluruh nilai
+    dihitung dinamis dari detail_transaksi, sama seperti ringkasan().
+    """
+    with koneksi() as conn:
+        row = conn.execute(
+            """SELECT COUNT(DISTINCT t.id_transaksi) AS jumlah_transaksi,
+                      COALESCE(SUM(d.berat * d.harga_satuan), 0) AS total_pendapatan,
+                      COALESCE(SUM(d.berat), 0) AS total_berat
+                 FROM transaksi t
+                 LEFT JOIN detail_transaksi d ON d.id_transaksi = t.id_transaksi
+                WHERE t.tanggal BETWEEN ? AND ?""",
+            (mulai, sampai),
+        ).fetchone()
+    jml = row["jumlah_transaksi"] or 0
+    total = bulat(row["total_pendapatan"] or 0)
+    return {
+        "jumlah_transaksi": jml,
+        "total_pendapatan": total,
+        "total_berat": round(row["total_berat"] or 0, 1),
+        "rata_rata_nota": bulat(total / jml) if jml else 0,
+    }
+
+
+def pendapatan_per_hari_rentang(mulai: str, sampai: str) -> list[dict]:
+    """Pendapatan harian dalam rentang tanggal (inklusif) untuk grafik omzet."""
+    with koneksi() as conn:
+        return _baris(conn.execute(
+            """SELECT t.tanggal,
+                      COALESCE(SUM(d.berat * d.harga_satuan), 0) AS total
+                 FROM transaksi t
+                 JOIN detail_transaksi d ON d.id_transaksi = t.id_transaksi
+                WHERE t.tanggal BETWEEN ? AND ?
+                GROUP BY t.tanggal
+                ORDER BY t.tanggal""",
+            (mulai, sampai),
+        ))
+
+
+def rentang_tanggal_transaksi() -> tuple[str | None, str | None]:
+    """Tanggal transaksi terawal dan terakhir, untuk preset 'Semua Data'."""
+    with koneksi() as conn:
+        row = conn.execute(
+            "SELECT MIN(tanggal) AS awal, MAX(tanggal) AS akhir FROM transaksi"
+        ).fetchone()
+    return row["awal"], row["akhir"]
